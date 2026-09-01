@@ -1,0 +1,82 @@
+.header{
+    position:fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #114B5F;
+    display:flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+.logo-container{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    color: #ffffff;
+}
+
+.fa-solid{
+    font-size: 1.3rem;
+    color: #45B69C;
+}
+
+.logo-texto{    
+  font-size: 1.3rem;
+  font-weight: bold;  
+  letter-spacing: 0.5px;
+}
+
+.busca-container{
+    position:relative;
+    width: 300px;
+}
+
+.busca-input{
+    width: 85%;
+    padding: 8px 35px 8px 15px;
+    border-radius: 20px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.busca-input::placeholder {
+  color: #e0e0e0;
+}
+
+.busca-icon{
+    position:absolute;
+    right: 12px;
+    top:50%;
+    transform: translateY(-50%);
+    color: #e0e0e0;
+    pointer-events: none;
+}
+
+.perfil-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;                         
+  background-color: rgba(255, 255, 255, 0.2); 
+  padding: 8px 35px 8px 15px;        
+  border-radius: 20px;              
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.usuario-nome {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.seta-icon {
+  font-size: 0.75rem;
+  color: #ffffff;                  
+}
