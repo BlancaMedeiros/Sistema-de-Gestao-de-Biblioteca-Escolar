@@ -80,3 +80,33 @@
   font-size: 0.75rem;
   color: #ffffff;                  
 }
+
+/* Container do Menu */
+.menu-navegacao {
+  display: flex;
+  gap: 20px; /* Espaço de 20px entre cada opção do menu */
+}
+
+/* Links do Menu */
+.menu-navegacao a {
+  color: #cce3de;           /* Cor do texto um pouco mais clara que o fundo */
+  text-decoration: none;    /* Tira aquele sublinhado feio padrão dos links */
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease; /* Faz a mudança de cor ser suave ao passar o mouse */
+}
+
+/* Quando o mouse passa por cima (Hover) */
+.menu-navegacao a:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1); /* Brilho suave */
+}
+
+/* Quando a rota está ATIVA (a página em que o usuário está agora) */
+.menu-navegacao a.ativo {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.2); /* Deixa a pílula marcada */
+  font-weight: 600;
+}
