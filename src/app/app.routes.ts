@@ -1,13 +1,18 @@
 import { Routes } from '@angular/router';
-//import { DashboardComponent } from './pages/dashboard/dashboard.component';
-//import { AcervoComponent } from './pages/acervo/acervo.component';
-//import { EmprestimosComponent } from './pages/emprestimos/emprestimos.component';
-//import { UsuariosComponent } from './pages/usuarios/usuarios.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AcervoComponent } from './components/acervo/acervo.component';
+import { EmprestimosComponent } from './components/emprestimos/emprestimos.component';
+import { UsuariosComponent } from './components/usuarios/usuarios.component';
+import { PaginaLoginComponent } from './components/pagina-login/pagina-login.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }, // Se entrar sem caminho, vai pro dashboard
- // { path: 'dashboard', component: DashboardComponent },
- // { path: 'acervo', component: AcervoComponent },
- // { path: 'emprestimos', component: EmprestimosComponent },
- // { path: 'usuarios', component: UsuariosComponent }
+  // Ao abrir a aplicação, vai direto para a página de login
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+
+  // Rotas dos componentes
+  { path: 'login', component: PaginaLoginComponent },
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'acervo', component: AcervoComponent },
+  { path: 'emprestimos', component: EmprestimosComponent },
+  { path: 'usuarios', component: UsuariosComponent }
 ];

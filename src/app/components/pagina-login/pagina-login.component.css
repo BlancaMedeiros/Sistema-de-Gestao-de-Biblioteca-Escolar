@@ -1,0 +1,95 @@
+/* Fundo escuro atrás do cartão de login */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; 
+}
+
+/* O cartão branco centralizado */
+.modal {
+  background: #ffffff;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 320px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  position: relative; 
+}
+
+/* Título e Ícone */
+.header-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.logo-icon {
+  font-size: 1.5rem;
+  color: #45B69C;
+}
+
+h2 {
+  margin: 0;
+  color: #114B5F;
+  font-size: 1.4rem;
+}
+
+/* Campos de entrada (inputs) */
+input {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box; 
+  outline: none;
+}
+
+input:focus {
+  border-color: #114B5F;
+}
+
+/* Botão X de Fechar */
+.close-btn {
+  background: none;
+  color: #888;
+  font-size: 20px; 
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  cursor: pointer;
+  border: none;
+}
+
+/* Botão Entrar */
+button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #114B5F;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background: #0d3847;
+}
+
+.texto-instrucao {
+  color: #777;
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: 15px;
+}
