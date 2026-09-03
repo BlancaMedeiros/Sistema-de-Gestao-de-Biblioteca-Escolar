@@ -16,9 +16,21 @@
         <a routerLink="/usuarios" routerLinkActive="ativo">Usuários</a>
     </nav>
 
-    <div class="perfil-container">
-        <span class="usuario-nome">Admin</span>
-        <i class="fa-solid fa-chevron-down seta-icon"></i>
-    </div>
+    <!-- Pílula do Perfil / Login -->
+    <div class="perfil-wrapper">
+        <div class="perfil-container" (click)="toggleMenu()">
+            <span class="usuario-nome">{{ usuarioLogado || 'Login' }}</span>
+            <i class="fa-solid fa-chevron-down seta-icon"></i>
+        </div>
 
+        <!-- Menu suspenso (Dropdown) que abre ao clicar -->
+        <div class="dropdown-menu" *ngIf="menuAberto">
+            <a routerLink="/perfil" (click)="menuAberto = false" class="dropdown-item">
+                <i class="fa-solid fa-user"></i> Meu Perfil
+            </a>
+            <button (click)="logout()" class="dropdown-item logout-btn">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+        </div>
+    </div>
 </header>
