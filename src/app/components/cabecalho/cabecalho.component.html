@@ -16,14 +16,12 @@
         <a routerLink="/usuarios" routerLinkActive="ativo">Usuários</a>
     </nav>
 
-    <!-- Pílula do Perfil / Login -->
     <div class="perfil-wrapper">
         <div class="perfil-container" (click)="toggleMenu()">
             <span class="usuario-nome">{{ usuarioLogado || 'Login' }}</span>
             <i class="fa-solid fa-chevron-down seta-icon"></i>
         </div>
 
-        <!-- Menu suspenso (Dropdown) que abre ao clicar -->
         <div class="dropdown-menu" *ngIf="menuAberto">
             <a routerLink="/perfil" (click)="menuAberto = false" class="dropdown-item">
                 <i class="fa-solid fa-user"></i> Meu Perfil

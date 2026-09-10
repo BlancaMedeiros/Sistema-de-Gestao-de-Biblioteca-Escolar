@@ -1,1 +1,92 @@
-<p>dashboard.component works!</p>
+<div class="dashboard-container">
+  
+  <header class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p>Bem-vindo ao painel de controle do Gestão de Biblioteca</p>
+  </header>
+
+  <!-- CARDS DE ESTATÍSTICAS -->
+  <section class="cards-grid" *ngIf="metricas">
+    <div class="card">
+      <div class="card-icon icon-livros">
+        <i class="fa-solid fa-book"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-titulo">Total no Acervo</span>
+        <strong class="card-valor">{{ metricas.totalAcervo | number }}</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon icon-emprestimos">
+        <i class="fa-solid fa-hand-holding-hand"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-titulo">Empréstimos Ativos</span>
+        <strong class="card-valor">{{ metricas.emprestimosAtivos }}</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon icon-atrasos">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-titulo">Devoluções Pendentes</span>
+        <strong class="card-valor alerta">{{ metricas.devolucoesPendentes }}</strong>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-icon icon-usuarios">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-titulo">Usuários Ativos</span>
+        <strong class="card-valor">{{ metricas.usuariosAtivos }}</strong>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABELA DE ÚLTIMAS ATIVIDADES -->
+  <section class="tabela-container">
+    <div class="tabela-header">
+      <h2>Últimos Empréstimos</h2>
+      <a routerLink="/emprestimos" class="btn-ver-todos">Ver Todos</a>
+    </div>
+
+    <table class="tabela-atividades">
+      <thead>
+        <tr>
+          <th>Livro</th>
+          <th>Usuário</th>
+          <th>Data Empréstimo</th>
+          <th>Devolução Prevista</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- LOOP DINÂMICO DOS EMPRÉSTIMOS -->
+        <tr *ngFor="let item of ultimosEmprestimos">
+          <td>{{ item.livro }}</td>
+          <td>{{ item.usuario }}</td>
+          <td>{{ item.dataEmprestimo }}</td>
+          <td>{{ item.devolucaoPrevista }}</td>
+          <td>
+            <span class="status" [ngClass]="getStatusClass(item.status)">
+              {{ item.status }}
+            </span>
+          </td>
+        </tr>
+
+        <!-- MENSAGEM CASO NÃO TENHA DADOS -->
+        <tr *ngIf="ultimosEmprestimos.length === 0 && !carregando">
+          <td colspan="5" class="sem-dados">
+            Nenhum empréstimo registrado até o momento.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
