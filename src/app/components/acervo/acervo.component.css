@@ -1,0 +1,200 @@
+.acervo-container {
+  padding: 80px 30px 30px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.acervo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.acervo-header h1 {
+  font-size: 1.8rem;
+  color: #114B5F;
+  margin: 0 0 5px 0;
+}
+
+.acervo-header p {
+  color: #666;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.btn-novo-livro {
+  background-color: #45B69C;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.btn-novo-livro:hover {
+  background-color: #369680;
+}
+
+/* Filtros */
+.filtros-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  position: relative;
+  flex: 1;
+}
+
+.search-input i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.search-input input {
+  width: 100%;
+  padding: 10px 10px 10px 40px;
+  border: 1px solid #dce2e6;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.select-filtro {
+  padding: 10px 15px;
+  border: 1px solid #dce2e6;
+  border-radius: 8px;
+  background-color: white;
+  outline: none;
+  color: #555;
+}
+
+/* Tabela */
+.tabela-container {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f5;
+}
+
+.tabela-acervo {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.tabela-acervo th {
+  padding: 12px;
+  color: #777;
+  font-weight: 600;
+  border-bottom: 2px solid #eef2f5;
+}
+
+.tabela-acervo td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #f4f6f8;
+  color: #444;
+}
+
+.titulo-livro {
+  font-weight: 600;
+  color: #114B5F;
+}
+
+.badge-categoria {
+  background: #f0f4f8;
+  color: #555;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+/* Badges de Status */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-disponivel { background-color: #e8f5e9; color: #2e7d32; }
+.status-esgotado { background-color: #fde8e8; color: #d32f2f; }
+.status-manutencao { background-color: #fff3e0; color: #ef6c00; }
+
+/* Botões de Ação */
+.acoes-cell {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.btn-acao {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.btn-acao.editar { color: #1976d2; }
+.btn-acao.editar:hover { background: #e3f2fd; }
+
+.btn-acao.emprestar { color: #45B69C; }
+.btn-acao.emprestar:hover { background: #e8f7f3; }
+.btn-acao.emprestar:disabled { color: #ccc; cursor: not-allowed; background: none; }
+
+.btn-acao.excluir { color: #d32f2f; }
+.btn-acao.excluir:hover { background: #fde8e8; }
+
+.sem-dados { text-align: center; color: #888; padding: 20px; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 500px;
+  padding: 25px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 { margin: 0; font-size: 1.3rem; color: #114B5F; }
+.btn-fechar { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
+
+.form-group { display: flex; flex-direction: column; margin-bottom: 15px; flex: 1; }
+.form-group label { font-size: 0.85rem; color: #555; margin-bottom: 5px; font-weight: 600; }
+.form-group input { padding: 9px; border: 1px solid #dce2e6; border-radius: 6px; outline: none; }
+.form-row { display: flex; gap: 15px; }
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.btn-cancelar { background: #eef2f5; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; color: #555; }
+.btn-salvar { background: #114B5F; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; }
+.btn-salvar:disabled { background: #ccc; cursor: not-allowed; }
