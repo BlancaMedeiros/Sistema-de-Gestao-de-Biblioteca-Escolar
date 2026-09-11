@@ -15,7 +15,7 @@
       <i class="fa-solid fa-magnifying-glass"></i>
       <input 
         type="text" 
-        placeholder="Buscar por título, autor ou ISBN..." 
+        placeholder="Buscar por título, autor, ISBN ou localização..." 
         [(ngModel)]="termoBusca" 
         (input)="aplicarFiltros()"
       />
@@ -28,6 +28,8 @@
       <option value="Naturalismo">Naturalismo</option>
       <option value="Regionalismo">Regionalismo</option>
       <option value="Ficção">Ficção</option>
+      <option value="Pré-Modernismo">Pré-Modernismo</option>
+      <option value="Romanticismo">Romanticismo</option>
     </select>
   </section>
 
@@ -40,6 +42,7 @@
           <th>ISBN</th>
           <th>Categoria</th>
           <th>Ano</th>
+          <th>Localização</th>
           <th>Qtd. Total</th>
           <th>Status</th>
           <th class="text-center">Ações</th>
@@ -52,6 +55,11 @@
           <td>{{ livro.isbn }}</td>
           <td><span class="badge-categoria">{{ livro.categoria }}</span></td>
           <td>{{ livro.anoPublicacao }}</td>
+          <td>
+            <span class="badge-localizacao">
+              {{ livro.estante || 'N/A' }} - {{ livro.prateleira || 'N/A' }}
+            </span>
+          </td>
           <td>{{ livro.quantidadeDisponivel }} / {{ livro.quantidadeTotal }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(livro.status)">
@@ -59,7 +67,6 @@
             </span>
           </td>
           <td class="acoes-cell">
- 
             <button class="btn-acao editar" title="Editar Livro" (click)="abrirModalEditar(livro)">
               <i class="fa-solid fa-pen"></i>
             </button>
@@ -70,7 +77,7 @@
           </td>
         </tr>
         <tr *ngIf="livrosFiltrados.length === 0">
-          <td colspan="8" class="sem-dados">Nenhum livro encontrado com os filtros aplicados.</td>
+          <td colspan="9" class="sem-dados">Nenhum livro encontrado com os filtros aplicados.</td>
         </tr>
       </tbody>
     </table>
@@ -114,6 +121,18 @@
         <div class="form-group">
           <label>Quantidade Total</label>
           <input type="number" [(ngModel)]="livroForm.quantidadeTotal" name="quantidadeTotal" min="1">
+        </div>
+      </div>
+
+      <!-- CAMPOS DE LOCALIZAÇÃO -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Estante / Setor</label>
+          <input type="text" [(ngModel)]="livroForm.estante" name="estante" placeholder="Ex: Estante 01">
+        </div>
+        <div class="form-group">
+          <label>Prateleira</label>
+          <input type="text" [(ngModel)]="livroForm.prateleira" name="prateleira" placeholder="Ex: Prateleira A">
         </div>
       </div>
 
