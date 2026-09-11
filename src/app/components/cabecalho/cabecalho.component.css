@@ -33,36 +33,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Campo de Busca */
-.busca-container {
-    position: relative;
-    width: 300px;
-}
-
-.busca-input {
-    width: 85%;
-    padding: 8px 35px 8px 15px;
-    border-radius: 20px;
-    border: none;
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-    outline: none;
-    font-size: 0.9rem;
-}
-
-.busca-input::placeholder {
-    color: #e0e0e0;
-}
-
-.busca-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #e0e0e0;
-    pointer-events: none;
-}
-
 /* Links do Menu de Navegação */
 .menu-navegacao {
     display: flex;

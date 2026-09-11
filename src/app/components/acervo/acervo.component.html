@@ -1,1 +1,128 @@
-<p>acervo.component works!</p>
+<div class="acervo-container">
+
+  <header class="acervo-header">
+    <div>
+      <h1>Gestão de Acervo</h1>
+      <p>Consulte, filtre e gerencie os livros cadastrados no sistema.</p>
+    </div>
+    <button class="btn-novo-livro" (click)="abrirModalNovo()">
+      <i class="fa-solid fa-plus"></i> Novo Livro
+    </button>
+  </header>
+
+  <section class="filtros-bar">
+    <div class="search-input">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        placeholder="Buscar por título, autor ou ISBN..." 
+        [(ngModel)]="termoBusca" 
+        (input)="aplicarFiltros()"
+      />
+    </div>
+
+    <select [(ngModel)]="categoriaFiltro" (change)="aplicarFiltros()" class="select-filtro">
+      <option value="">Todas as Categorias</option>
+      <option value="Literatura Brasileira">Literatura Brasileira</option>
+      <option value="Romance">Romance</option>
+      <option value="Naturalismo">Naturalismo</option>
+      <option value="Regionalismo">Regionalismo</option>
+      <option value="Ficção">Ficção</option>
+    </select>
+  </section>
+
+  <section class="tabela-container">
+    <table class="tabela-acervo">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Autor</th>
+          <th>ISBN</th>
+          <th>Categoria</th>
+          <th>Ano</th>
+          <th>Qtd. Total</th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let livro of livrosFiltrados">
+          <td class="titulo-livro">{{ livro.titulo }}</td>
+          <td>{{ livro.autor }}</td>
+          <td>{{ livro.isbn }}</td>
+          <td><span class="badge-categoria">{{ livro.categoria }}</span></td>
+          <td>{{ livro.anoPublicacao }}</td>
+          <td>{{ livro.quantidadeDisponivel }} / {{ livro.quantidadeTotal }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(livro.status)">
+              {{ livro.status }}
+            </span>
+          </td>
+          <td class="acoes-cell">
+ 
+            <button class="btn-acao editar" title="Editar Livro" (click)="abrirModalEditar(livro)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+
+            <button class="btn-acao excluir" title="Excluir Livro" (click)="excluirLivro(livro)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="livrosFiltrados.length === 0">
+          <td colspan="8" class="sem-dados">Nenhum livro encontrado com os filtros aplicados.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<div class="modal-overlay" *ngIf="exibirModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>{{ modoEdicao ? 'Editar Livro' : 'Cadastrar Novo Livro' }}</h2>
+      <button class="btn-fechar" (click)="fecharModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="salvarLivro()" #formLivro="ngForm">
+      <div class="form-group">
+        <label>Título</label>
+        <input type="text" [(ngModel)]="livroForm.titulo" name="titulo" required placeholder="Ex: Dom Casmurro">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Autor</label>
+          <input type="text" [(ngModel)]="livroForm.autor" name="autor" required placeholder="Ex: Machado de Assis">
+        </div>
+        <div class="form-group">
+          <label>ISBN</label>
+          <input type="text" [(ngModel)]="livroForm.isbn" name="isbn" placeholder="978-85-...">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Categoria</label>
+          <input type="text" [(ngModel)]="livroForm.categoria" name="categoria" placeholder="Ex: Romance">
+        </div>
+        <div class="form-group">
+          <label>Ano de Publicação</label>
+          <input type="number" [(ngModel)]="livroForm.anoPublicacao" name="anoPublicacao">
+        </div>
+        <div class="form-group">
+          <label>Quantidade Total</label>
+          <input type="number" [(ngModel)]="livroForm.quantidadeTotal" name="quantidadeTotal" min="1">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancelar" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-salvar" [disabled]="!formLivro.form.valid">
+          {{ modoEdicao ? 'Atualizar' : 'Salvar Livro' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
