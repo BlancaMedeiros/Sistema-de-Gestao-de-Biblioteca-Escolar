@@ -6,7 +6,6 @@ import { Livro } from '../models/livro.model';
 import { Emprestimo } from '../models/emprestimo.model';
 import { Usuario } from '../models/usuario.model';
 
-
 @Injectable({
   providedIn: 'root'
 })
@@ -53,26 +52,34 @@ export class DashboardService {
 
   constructor() { }
 
-  // --- MÉTODOS DO DASHBOARD ---
   getMetricas(): Observable<MetricasDashboard> {
+    const totalAcervo = this.mockAcervo.reduce((acc, livro) => acc + livro.quantidadeTotal, 0);
+    const emprestimosAtivos = this.mockEmprestimos.filter(e => e.status === 'Em Andamento').length;
+    const devolucoesPendentes = this.mockEmprestimos.filter(e => e.status === 'Atrasado').length;
+    const usuariosAtivos = this.mockUsuarios.filter(u => u.status === 'Ativo').length;
+
     return of({
-      totalAcervo: 1240,
-      emprestimosAtivos: 48,
-      devolucoesPendentes: 5,
-      usuariosAtivos: 310
+      totalAcervo,
+      emprestimosAtivos,
+      devolucoesPendentes,
+      usuariosAtivos
     });
   }
 
   getUltimosEmprestimos(): Observable<EmprestimoRecente[]> {
-    return of([
-      { id: 1, livro: 'Dom Casmurro', usuario: 'Maria Silva', dataEmprestimo: '01/09/2026', devolucaoPrevista: '15/09/2026', status: 'Em Andamento' },
-      { id: 2, livro: 'O Cortiço', usuario: 'João Santos', dataEmprestimo: '25/08/2026', devolucaoPrevista: '08/09/2026', status: 'Em Andamento' },
-      { id: 3, livro: 'Memórias Póstumas de Brás Cubas', usuario: 'Ana Souza', dataEmprestimo: '10/08/2026', devolucaoPrevista: '24/08/2026', status: 'Atrasado' },
-      { id: 4, livro: 'A Hora da Estrela', usuario: 'Carlos Lima', dataEmprestimo: '15/08/2026', devolucaoPrevista: '29/08/2026', status: 'Devolvido' }
-    ]);
+    const ultimos = this.mockEmprestimos.slice(0, 4).map(e => ({
+      id: e.id,
+      livro: e.livroTitulo,
+      usuario: e.usuarioNome,
+      dataEmprestimo: e.dataEmprestimo,
+      devolucaoPrevista: e.devolucaoPrevista,
+      status: e.status
+    }));
+
+    return of(ultimos);
   }
 
-  // --- MÉTODOS PARA AS OUTRAS TELAS ---
+
   getAcervo(): Observable<Livro[]> {
     return of(this.mockAcervo);
   }
@@ -83,5 +90,26 @@ export class DashboardService {
 
   getUsuarios(): Observable<Usuario[]> {
     return of(this.mockUsuarios);
+  }
+
+
+  decrementarEstoque(livroId: number): void {
+    const livro = this.mockAcervo.find(l => l.id === livroId);
+    if (livro && livro.quantidadeDisponivel > 0) {
+      livro.quantidadeDisponivel--;
+      if (livro.quantidadeDisponivel === 0) {
+        livro.status = 'Esgotado';
+      }
+    }
+  }
+
+  incrementarEstoque(livroId: number): void {
+    const livro = this.mockAcervo.find(l => l.id === livroId);
+    if (livro && livro.quantidadeDisponivel < livro.quantidadeTotal) {
+      livro.quantidadeDisponivel++;
+      if (livro.status === 'Esgotado' && livro.quantidadeDisponivel > 0) {
+        livro.status = 'Disponível';
+      }
+    }
   }
 }

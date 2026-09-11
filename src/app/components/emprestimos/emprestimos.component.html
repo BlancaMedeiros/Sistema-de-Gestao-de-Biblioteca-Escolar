@@ -1,1 +1,134 @@
-<p>emprestimos.component works!</p>
+<div class="emprestimos-container">
+
+  <header class="emprestimos-header">
+    <div>
+      <h1>Controle de Empréstimos</h1>
+      <p>Gerencie as retiradas, renovações e devoluções de livros.</p>
+    </div>
+    <button class="btn-novo-emprestimo" (click)="abrirModal()">
+      <i class="fa-solid fa-plus"></i> Novo Empréstimo
+    </button>
+  </header>
+
+  <section class="filtros-bar">
+    <div class="search-input">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input 
+        type="text" 
+        placeholder="Buscar por leitor ou título do livro..." 
+        [(ngModel)]="termoBusca" 
+        (input)="aplicarFiltros()"
+      />
+    </div>
+
+    <select [(ngModel)]="statusFiltro" (change)="aplicarFiltros()" class="select-filtro">
+      <option value="">Todos os Status</option>
+      <option value="Em Andamento">Em Andamento</option>
+      <option value="Atrasado">Atrasado</option>
+      <option value="Devolvido">Devolvido</option>
+    </select>
+  </section>
+
+  <section class="tabela-container">
+    <table class="tabela-emprestimos">
+      <thead>
+        <tr>
+          <th>Leitor</th>
+          <th>Livro</th>
+          <th>Data Empréstimo</th>
+          <th>Devolução Prevista</th>
+          <th>Status</th>
+          <th class="text-center">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of emprestimosFiltrados">
+          <td class="nome-leitor">{{ emp.usuarioNome }}</td>
+          <td class="titulo-livro">{{ emp.livroTitulo }}</td>
+          <td>{{ emp.dataEmprestimo }}</td>
+          <td>{{ emp.devolucaoPrevista }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(emp.status)">
+              {{ emp.status }}
+            </span>
+          </td>
+          <td class="acoes-cell">
+            <button 
+              class="btn-acao renovar" 
+              title="Renovar (+7 dias)" 
+              *ngIf="emp.status !== 'Devolvido'"
+              (click)="renovarEmprestimo(emp)">
+              <i class="fa-solid fa-rotate-right"></i> Renovar
+            </button>
+            
+            <button 
+              class="btn-acao devolver" 
+              title="Registrar Devolução" 
+              *ngIf="emp.status !== 'Devolvido'"
+              (click)="devolverLivro(emp)">
+              <i class="fa-solid fa-check"></i> Devolver
+            </button>
+
+            <span class="devolvido-text" *ngIf="emp.status === 'Devolvido'">
+              Concluído em {{ emp.devolucaoReal || emp.devolucaoPrevista }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="emprestimosFiltrados.length === 0">
+          <td colspan="6" class="sem-dados">Nenhum empréstimo encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>
+
+<div class="modal-overlay" *ngIf="exibirModalNovo">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Novo Empréstimo</h2>
+      <button class="btn-fechar" (click)="fecharModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="salvarEmprestimo()" #formEmp="ngForm">
+      
+      <div class="form-group">
+        <label>Selecione o Leitor</label>
+        <select [(ngModel)]="novoEmprestimo.usuarioId" name="usuarioId" required>
+          <option [ngValue]="null" disabled>Selecione um leitor...</option>
+          <option *ngFor="let usuario of usuariosAtivos" [value]="usuario.id">
+            {{ usuario.nome }} ({{ usuario.matricula }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Selecione o Livro</label>
+        <select [(ngModel)]="novoEmprestimo.livroId" name="livroId" required>
+          <option [ngValue]="null" disabled>Selecione um livro disponível...</option>
+          <option *ngFor="let livro of livrosDisponiveis" [value]="livro.id">
+            {{ livro.titulo }} - Disponíveis: {{ livro.quantidadeDisponivel }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Data de Empréstimo</label>
+          <input type="date" [(ngModel)]="novoEmprestimo.dataEmprestimo" name="dataEmprestimo" required>
+        </div>
+
+        <div class="form-group">
+          <label>Devolução Prevista</label>
+          <input type="date" [(ngModel)]="novoEmprestimo.devolucaoPrevista" name="devolucaoPrevista" required>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancelar" (click)="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn-salvar" [disabled]="!formEmp.form.valid">Confirmar Empréstimo</button>
+      </div>
+
+    </form>
+  </div>
+</div>
