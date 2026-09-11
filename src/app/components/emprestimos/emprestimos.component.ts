@@ -17,6 +17,7 @@ export class EmprestimosComponent implements OnInit {
   emprestimos: Emprestimo[] = [];
   emprestimosFiltrados: Emprestimo[] = [];
 
+  todosLivros: Livro[] = [];
   livrosDisponiveis: Livro[] = [];
   usuariosAtivos: Usuario[] = [];
  
@@ -43,15 +44,16 @@ export class EmprestimosComponent implements OnInit {
       this.aplicarFiltros();
     });
 
-    this.carregarLivrosDisponiveis();
+    this.carregarLivros();
 
     this.dashboardService.getUsuarios().subscribe((usuarios) => {
       this.usuariosAtivos = usuarios.filter(u => u.status === 'Ativo');
     });
   }
 
-  carregarLivrosDisponiveis(): void {
+  carregarLivros(): void {
     this.dashboardService.getAcervo().subscribe((livros) => {
+      this.todosLivros = livros;
       this.livrosDisponiveis = livros.filter(l => l.quantidadeDisponivel > 0);
     });
   }
@@ -65,6 +67,19 @@ export class EmprestimosComponent implements OnInit {
 
       return atendeBusca && atendeStatus;
     });
+  }
+
+  obterLocalizacaoLivro(livroId: number): string {
+    const livro = this.todosLivros.find(l => l.id === livroId);
+    if (livro && (livro.estante || livro.prateleira)) {
+      return `${livro.estante || 'S/E'} - ${livro.prateleira || 'S/P'}`;
+    }
+    return 'Não informada';
+  }
+
+  obterLocalizacaoLivroSelecionado(): string | null {
+    if (!this.novoEmprestimo.livroId) return null;
+    return this.obterLocalizacaoLivro(Number(this.novoEmprestimo.livroId));
   }
 
   renovarEmprestimo(emprestimo: Emprestimo): void {
@@ -82,10 +97,8 @@ export class EmprestimosComponent implements OnInit {
       emprestimo.status = 'Devolvido';
       emprestimo.devolucaoReal = this.getHojeFormatado();
       
-      // Atualiza estoque no Service
       this.dashboardService.incrementarEstoque(emprestimo.livroId);
-      this.carregarLivrosDisponiveis();
-
+      this.carregarLivros();
       this.aplicarFiltros();
     }
   }
@@ -117,9 +130,8 @@ export class EmprestimosComponent implements OnInit {
 
       this.emprestimos.unshift(item);
       
-      // Subtrai estoque no Service
       this.dashboardService.decrementarEstoque(livro.id);
-      this.carregarLivrosDisponiveis();
+      this.carregarLivros();
 
       this.aplicarFiltros();
       this.fecharModal();

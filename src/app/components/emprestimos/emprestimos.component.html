@@ -35,6 +35,7 @@
         <tr>
           <th>Leitor</th>
           <th>Livro</th>
+          <th>Localização</th>
           <th>Data Empréstimo</th>
           <th>Devolução Prevista</th>
           <th>Status</th>
@@ -45,6 +46,11 @@
         <tr *ngFor="let emp of emprestimosFiltrados">
           <td class="nome-leitor">{{ emp.usuarioNome }}</td>
           <td class="titulo-livro">{{ emp.livroTitulo }}</td>
+          <td>
+            <span class="badge-localizacao">
+              {{ obterLocalizacaoLivro(emp.livroId) }}
+            </span>
+          </td>
           <td>{{ emp.dataEmprestimo }}</td>
           <td>{{ emp.devolucaoPrevista }}</td>
           <td>
@@ -75,7 +81,7 @@
           </td>
         </tr>
         <tr *ngIf="emprestimosFiltrados.length === 0">
-          <td colspan="6" class="sem-dados">Nenhum empréstimo encontrado.</td>
+          <td colspan="7" class="sem-dados">Nenhum empréstimo encontrado.</td>
         </tr>
       </tbody>
     </table>
@@ -110,6 +116,9 @@
             {{ livro.titulo }} - Disponíveis: {{ livro.quantidadeDisponivel }}
           </option>
         </select>
+        <small class="dica-localizacao" *ngIf="novoEmprestimo.livroId">
+          📍 Localização física: <strong>{{ obterLocalizacaoLivroSelecionado() }}</strong>
+        </small>
       </div>
 
       <div class="form-row">

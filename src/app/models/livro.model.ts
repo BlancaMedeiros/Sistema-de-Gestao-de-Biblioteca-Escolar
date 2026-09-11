@@ -8,4 +8,7 @@ export interface Livro {
   quantidadeTotal: number;
   quantidadeDisponivel: number;
   status: 'Disponível' | 'Esgotado' | 'Em Manutenção';
+  estante?: string;  
+  prateleira?: string;
 }
+

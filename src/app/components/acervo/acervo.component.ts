@@ -28,7 +28,9 @@ export class AcervoComponent implements OnInit {
     anoPublicacao: new Date().getFullYear(),
     quantidadeTotal: 1,
     quantidadeDisponivel: 1,
-    status: 'Disponível'
+    status: 'Disponível',
+    estante: '',
+    prateleira: ''
   };
 
   constructor(private dashboardService: DashboardService) {}
@@ -48,7 +50,9 @@ export class AcervoComponent implements OnInit {
     this.livrosFiltrados = this.livros.filter(livro => {
       const atendeBusca = livro.titulo.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
                           livro.autor.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
-                          livro.isbn.includes(this.termoBusca);
+                          livro.isbn.includes(this.termoBusca) ||
+                          (livro.estante && livro.estante.toLowerCase().includes(this.termoBusca.toLowerCase())) ||
+                          (livro.prateleira && livro.prateleira.toLowerCase().includes(this.termoBusca.toLowerCase()));
 
       const atendeCategoria = this.categoriaFiltro ? livro.categoria === this.categoriaFiltro : true;
 
@@ -66,7 +70,6 @@ export class AcervoComponent implements OnInit {
   abrirModalEditar(livro: Livro): void {
     this.modoEdicao = true;
     this.livroEdicaoId = livro.id;
-
     this.livroForm = { ...livro };
     this.exibirModal = true;
   }
@@ -87,9 +90,7 @@ export class AcervoComponent implements OnInit {
           ...this.livroForm
         } as Livro;
       }
-    } 
-    
-    else {
+    } else {
       const novo: Livro = {
         id: this.livros.length + 1,
         titulo: this.livroForm.titulo!,
@@ -99,7 +100,9 @@ export class AcervoComponent implements OnInit {
         anoPublicacao: Number(this.livroForm.anoPublicacao),
         quantidadeTotal: Number(this.livroForm.quantidadeTotal),
         quantidadeDisponivel: Number(this.livroForm.quantidadeTotal),
-        status: 'Disponível'
+        status: 'Disponível',
+        estante: this.livroForm.estante || 'Não informada',
+        prateleira: this.livroForm.prateleira || 'Não informada'
       };
       this.livros.unshift(novo);
     }
@@ -125,7 +128,9 @@ export class AcervoComponent implements OnInit {
       anoPublicacao: new Date().getFullYear(),
       quantidadeTotal: 1,
       quantidadeDisponivel: 1,
-      status: 'Disponível'
+      status: 'Disponível',
+      estante: '',
+      prateleira: ''
     };
   }
 
