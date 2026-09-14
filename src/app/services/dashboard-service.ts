@@ -125,4 +125,40 @@ export class DashboardService {
   adicionarUsuario(usuario: Usuario): void {
     this.mockUsuarios.unshift(usuario);
   }
+
+  // 1. Método para buscar o usuário logado (ex: pegando o ID 8 ou ID 1)
+getPerfilLogado(usuarioId: number = 8): Observable<any> {
+  const usuario = this.mockUsuarios.find(u => u.id === usuarioId);
+  
+  if (!usuario) {
+    return of(null);
+  }
+
+  // Calcula estatísticas reais com base nos mocks do próprio serviço
+  const emprestimosAtivos = this.mockEmprestimos.filter(
+    e => e.usuarioId === usuarioId && e.status === 'Em Andamento'
+  ).length;
+
+  const historicoTotal = this.mockEmprestimos.filter(
+    e => e.usuarioId === usuarioId
+  ).length;
+
+  return of({
+    ...usuario,
+    telefone: '(11) 98765-4321', // Campo adicional
+    emprestimosAtivos,
+    historicoTotal
+  });
+}
+
+// 2. Método para salvar as alterações do perfil
+atualizarPerfil(usuarioAtualizado: Usuario & { telefone?: string }): void {
+  const index = this.mockUsuarios.findIndex(u => u.id === usuarioAtualizado.id);
+  if (index !== -1) {
+    this.mockUsuarios[index] = {
+      ...this.mockUsuarios[index],
+      ...usuarioAtualizado
+    };
+  }
+}
 }

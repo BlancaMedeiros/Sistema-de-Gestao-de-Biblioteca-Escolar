@@ -1,0 +1,180 @@
+.container, 
+:host {
+  display: block;
+  padding-top: 80px; /* Ajuste o valor até o título "Meu Perfil" aparecer por inteiro */
+}
+
+.container-perfil {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: inherit;
+}
+
+h2 {
+  color: #1e3a8a;
+  margin-bottom: 4px;
+}
+
+.subtitulo {
+  color: #64748b;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+/* Card do Topo com Foto e Nome */
+.card-usuario {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 20px;
+}
+
+.avatar-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #0d9488;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.info-cabecalho h3 {
+  margin: 0 0 6px 0;
+  color: #1e293b;
+}
+
+.badge-cargo {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.matricula {
+  margin: 6px 0 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Quadrados de Estatísticas */
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-numero {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #0d9488;
+}
+
+.stat-label {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Formulário */
+.card-formulario {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card-formulario h4 {
+  margin-top: 0;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+.titulo-secao {
+  margin-top: 24px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.input-disabled {
+  background-color: #f8fafc;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.alerta-sucesso {
+  background-color: #dcfce7;
+  color: #15803d;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.acoes {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.btn-salvar {
+  background-color: #0d9488;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-salvar:hover {
+  background-color: #0f766e;
+}
