@@ -4,6 +4,7 @@ import { AcervoComponent } from './components/acervo/acervo.component';
 import { EmprestimosComponent } from './components/emprestimos/emprestimos.component';
 import { UsuariosComponent } from './components/usuarios/usuarios.component';
 import { PaginaLoginComponent } from './components/pagina-login/pagina-login.component';
+import { PerfilComponent } from './components/perfil/perfil.component';
 
 export const routes: Routes = [
   // Ao abrir a aplicação, vai direto para a página de login
@@ -11,6 +12,7 @@ export const routes: Routes = [
 
   // Rotas dos componentes
   { path: 'login', component: PaginaLoginComponent },
+  { path: 'perfil', component: PerfilComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'acervo', component: AcervoComponent },
   { path: 'emprestimos', component: EmprestimosComponent },

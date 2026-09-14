@@ -1,0 +1,73 @@
+<div class="container-perfil" *ngIf="usuario">
+  <h2>Meu Perfil</h2>
+  <p class="subtitulo">Gerencie suas informações pessoais e credenciais de acesso.</p>
+
+  <!-- Card de Destaque / Resumo -->
+  <div class="card-usuario">
+    <div class="avatar-circle">
+      {{ usuario.nome.charAt(0) }}
+    </div>
+    <div class="info-cabecalho">
+      <h3>{{ usuario.nome }}</h3>
+      <span class="badge-cargo">{{ usuario.cargo }}</span>
+      <p class="matricula">Matrícula: {{ usuario.matricula }}</p>
+    </div>
+  </div>
+
+  <!-- Métricas Rápidas -->
+  <div class="grid-stats">
+    <div class="stat-box">
+      <span class="stat-numero">{{ usuario.emprestimosAtivos }}</span>
+      <span class="stat-label">Empréstimos Ativos</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-numero">{{ usuario.historicoTotal }}</span>
+      <span class="stat-label">Total de Leituras</span>
+    </div>
+  </div>
+
+  <!-- Formulário de Edição -->
+  <div class="card-formulario">
+    <h4>Dados Pessoais</h4>
+
+    <div *ngIf="mensagemSucesso" class="alerta-sucesso">
+      {{ mensagemSucesso }}
+    </div>
+
+    <form (ngSubmit)="salvarPerfil()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome Completo</label>
+          <input type="text" [value]="usuario.nome" disabled class="input-disabled">
+        </div>
+        <div class="form-group">
+          <label>Matrícula</label>
+          <input type="text" [value]="usuario.matricula" disabled class="input-disabled">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>E-mail</label>
+          <input type="email" [(ngModel)]="usuario.email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Telefone / Whatsapp</label>
+          <input type="text" [(ngModel)]="usuario.telefone" name="telefone">
+        </div>
+      </div>
+
+      <h4 class="titulo-secao">Segurança</h4>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nova Senha</label>
+          <input type="password" [(ngModel)]="novaSenha" name="novaSenha" placeholder="Digite para alterar a senha">
+        </div>
+      </div>
+
+      <div class="acoes">
+        <button type="submit" class="btn-salvar">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
