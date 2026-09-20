@@ -1,59 +1,51 @@
-# SistemaDeGestaoDeBibliotecaEscolar
+# Sistema de Gestão de Biblioteca Escolar
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Monorepo do Projeto Integrador II, com frontend Angular, backend Express + TypeScript e banco MySQL.
 
-## Development server
+> A fundação da stack local está disponível. Migrations, autenticação, Swagger e regras de negócio ainda serão adicionados nas próximas etapas.
 
-To start a local development server, run:
+## Pré-requisitos
 
-```bash
-ng serve
+- Docker Desktop em execução, com Docker Compose;
+- Node.js e npm apenas para executar os atalhos `npm run ...` da raiz.
+
+## Executar o ambiente local
+
+No PowerShell, na raiz deste repositório:
+
+```powershell
+Copy-Item .env.example .env
+npm run dev
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Na primeira execução, o Docker baixará as imagens e instalará as dependências dentro dos containers. As alterações em `frontend/` e `backend/` são refletidas por hot reload.
 
-## Code scaffolding
+Endereços locais:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- Frontend: `http://localhost:4200`
+- Backend: `http://localhost:3000`
+- Saúde do processo: `http://localhost:3000/health`
+- Prontidão com MySQL: `http://localhost:3000/ready`
 
-```bash
-ng generate component component-name
+Para parar os containers sem apagar os dados do banco:
+
+```powershell
+npm run dev:down
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Verificar a fundação
 
-```bash
-ng generate --help
+Com a stack em execução, abra `http://localhost:3000/ready`. A resposta deve conter `"database": "connected"`. Esse endpoint só confirma a conexão Express-MySQL; ele não comprova migrations, autenticação, Swagger ou regras de empréstimo.
+
+Use `npm run dev:status` para ver o estado dos serviços e `npm run dev:logs` para acompanhar os logs.
+
+## Estrutura
+
+```text
+frontend/  # Angular
+backend/   # Express + TypeScript
+database/  # migrations e seeds SQL futuros
+docs/      # decisões e contratos técnicos
 ```
 
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Veja [docs/arquitetura.md](docs/arquitetura.md) para decisões, limites atuais e próximas etapas.
