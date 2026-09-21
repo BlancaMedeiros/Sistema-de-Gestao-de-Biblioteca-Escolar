@@ -2,9 +2,12 @@ import mysql, { type RowDataPacket } from 'mysql2/promise';
 
 import { env } from './env.js';
 
+const connection = env.database.socketPath
+  ? { socketPath: env.database.socketPath }
+  : { host: env.database.host, port: env.database.port };
+
 export const pool = mysql.createPool({
-  host: env.database.host,
-  port: env.database.port,
+  ...connection,
   database: env.database.name,
   user: env.database.user,
   password: env.database.password,

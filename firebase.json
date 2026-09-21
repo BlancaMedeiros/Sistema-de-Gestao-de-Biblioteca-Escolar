@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": "frontend/dist/Sistema-de-Gestao-de-Biblioteca-Escolar/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api{,/**}",
+        "run": {
+          "serviceId": "biblioteca-api",
+          "region": "southamerica-east1",
+          "pinTag": true
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

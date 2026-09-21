@@ -19,12 +19,21 @@ function readPort(name: string, fallback: number): number {
   return value;
 }
 
+function readOptional(name: string): string | undefined {
+  const value = process.env[name];
+
+  return value || undefined;
+}
+
+const databaseSocketPath = readOptional('DB_SOCKET_PATH');
+
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: readPort('PORT', 3000),
   database: {
-    host: readRequired('DB_HOST'),
+    host: databaseSocketPath ? undefined : readRequired('DB_HOST'),
     port: readPort('DB_PORT', 3306),
+    socketPath: databaseSocketPath,
     name: readRequired('DB_NAME'),
     user: readRequired('DB_USER'),
     password: readRequired('DB_PASSWORD'),

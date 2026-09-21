@@ -7,15 +7,15 @@ export const app = express();
 app.disable('x-powered-by');
 app.use(express.json());
 
-app.get('/health', (_request, response) => {
+function healthCheck(_request: express.Request, response: express.Response): void {
   response.status(200).json({
     status: 'ok',
     service: 'backend',
     timestamp: new Date().toISOString(),
   });
-});
+}
 
-app.get('/ready', async (_request, response) => {
+async function readinessCheck(_request: express.Request, response: express.Response): Promise<void> {
   try {
     const ready = await databaseIsReady();
 
@@ -44,7 +44,13 @@ app.get('/ready', async (_request, response) => {
       },
     });
   }
-});
+}
+
+// As rotas sem prefixo atendem verificações diretas do Cloud Run. As rotas
+// /api equivalentes são consumidas pelo Firebase Hosting, que preserva o path
+// original ao encaminhar a requisição para o serviço.
+app.get(['/health', '/api/health'], healthCheck);
+app.get(['/ready', '/api/ready'], readinessCheck);
 
 app.use((_request, response) => {
   response.status(404).json({

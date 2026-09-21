@@ -9,6 +9,9 @@
     "dev:logs": "docker compose logs --follow",
     "dev:status": "docker compose ps",
     "build": "docker compose build",
+    "build:backend": "npm --prefix backend run build",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:all": "npm run build:backend && npm run build:frontend",
     "test:frontend": "docker compose run --rm frontend npm run test -- --watch=false"
   },
   "packageManager": "npm@11.6.2"

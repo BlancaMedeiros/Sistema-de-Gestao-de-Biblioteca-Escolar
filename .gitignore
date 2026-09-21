@@ -18,6 +18,13 @@
 npm-debug.log
 yarn-error.log
 
+# Firebase CLI cache and debug output
+.firebase/
+firebase-debug.log
+
+# Credenciais temporárias criadas pelo GitHub Actions
+gha-creds-*.json
+
 # IDEs and editors
 .idea/
 .project
