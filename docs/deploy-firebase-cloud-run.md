@@ -72,7 +72,7 @@ O serviço deve usar uma conta de serviço dedicada com somente `roles/cloudsql.
 O workflow versionado em `.github/workflows/deploy-firebase.yml` é executado a cada `push` nessa branch e também pode ser iniciado manualmente pela aba **Actions** do GitHub.
 
 ```text
-push -> builds do backend e frontend -> OIDC -> Cloud Build -> Cloud Run -> Firebase Hosting -> /api/health e /api/ready
+push -> builds do backend e frontend -> OIDC -> Docker + Artifact Registry -> Cloud Run -> Firebase Hosting -> /api/health e /api/ready
 ```
 
 A autenticação não usa chave JSON ou segredo no GitHub. Ela usa Workload Identity Federation, limitada ao ID imutável do repositório `1346661430` e à referência `refs/heads/feat/backend-foundation`. O deploy publica a imagem com a tag do commit (`GITHUB_SHA`) e só avança para o Hosting se os dois builds forem concluídos.
