@@ -30,6 +30,7 @@ const databaseSocketPath = readOptional('DB_SOCKET_PATH');
 export const env = {
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: readPort('PORT', 3000),
+  sessionSecret: readRequired('SESSION_SECRET'),
   database: {
     host: databaseSocketPath ? undefined : readRequired('DB_HOST'),
     port: readPort('DB_PORT', 3306),
