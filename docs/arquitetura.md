@@ -25,8 +25,11 @@ Navegador -> frontend:4200 -> backend:3000 -> mysql:3306
 | `frontend` | Angular em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
 | `backend` | API Express em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
 | `mysql` | Banco relacional local | Dados no volume `mysql_data` |
+| `adminer` | Interface web para inspecionar o MySQL manualmente (`http://localhost:8080`) | Não persiste nada; só front-end para o `mysql` |
 
 Os volumes `frontend_node_modules` e `backend_node_modules` mantêm dependências Linux separadas das dependências instaladas no Windows do computador.
+
+`adminer` é ferramenta de desenvolvimento — não faz parte da aplicação, não é implantada em produção.
 
 ## Verificação inicial
 

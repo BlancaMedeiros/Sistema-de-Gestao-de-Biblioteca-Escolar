@@ -33,6 +33,7 @@ Endereços locais:
 - Saúde do processo: `http://localhost:3000/health`
 - Prontidão com MySQL: `http://localhost:3000/ready`
 - Documentação Swagger: `http://localhost:3000/api/docs`
+- Adminer (visualizar o banco): `http://localhost:8080` — Sistema: `MySQL`, Servidor: `mysql`, usuário/senha do seu `.env` (`MYSQL_USER`/`MYSQL_PASSWORD`, ou `root`/`MYSQL_ROOT_PASSWORD` para acesso total), Base de dados: `biblioteca`
 
 Para parar os containers sem apagar os dados do banco:
 
