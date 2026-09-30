@@ -52,7 +52,8 @@ Reaplicar o comando é seguro (idempotente); nada acontece se não houver migrat
 
 ## Autenticação (primeira fatia implementada)
 
-- `POST /api/v1/auth/login`, `POST /api/v1/auth/logout` e `GET /api/v1/me`, cobertos por testes de integração (`backend/src/modules/auth/*.test.ts`) contra o MySQL real.
+- `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me` (só o campo `nome` por enquanto) e `PUT /api/v1/me/senha`, cobertos por testes de integração (`backend/src/modules/auth/*.test.ts`) contra o MySQL real.
+- Trocar a senha (`PUT /me/senha`) invalida as demais sessões do funcionário (`destroyOtherSessions`, em `session-store.ts`) — a sessão atual continua válida, para não forçar um novo login imediato após uma troca legítima.
 - Um único papel — "funcionário autorizado" — sem distinção ADMIN/OPERADOR por enquanto, para reduzir escopo desta fatia. Tabela `funcionarios` (login único, hash Argon2id da senha).
 - Sessão persistida na tabela `sessoes`, via `backend/src/config/session-store.ts`: uma implementação própria de `express-session.Store` sobre o MySQL, no lugar do `MemoryStore` padrão (que perde as sessões a cada reinício do processo e não escala para múltiplas instâncias). Cookie `biblioteca.sid`, `HttpOnly`, `SameSite=Lax`, `Secure` em produção; a sessão é regenerada no login.
 - Contas de desenvolvimento criadas por `npm run dev:seed:funcionarios` (`backend/src/db/seed-funcionarios.ts` + `run-seed-funcionarios-cli.ts`), com login e senha conhecidos e fixos no código — deliberado, só para uso local/demo. Idempotente por login (não recria nem sobrescreve senha de quem já existe; nunca apaga dados) e recusa rodar com `NODE_ENV=production`. Credenciais em `README.md`. Uma conta de produção com senha desconhecida (lida de segredo, não fixa no repo) ainda precisa de um comando separado — não existe hoje.

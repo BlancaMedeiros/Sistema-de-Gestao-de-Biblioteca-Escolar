@@ -43,3 +43,19 @@ export async function createFuncionario(
 
   return criado;
 }
+
+export async function updateFuncionarioNome(pool: Pool, id: number, nome: string): Promise<FuncionarioRow> {
+  await pool.query('UPDATE funcionarios SET nome = ? WHERE id = ?', [nome, id]);
+
+  const atualizado = await findFuncionarioById(pool, id);
+
+  if (!atualizado) {
+    throw new Error('Falha ao atualizar funcionário: registro não encontrado após a atualização.');
+  }
+
+  return atualizado;
+}
+
+export async function updateFuncionarioSenha(pool: Pool, id: number, senhaHash: string): Promise<void> {
+  await pool.query('UPDATE funcionarios SET senha_hash = ? WHERE id = ?', [senhaHash, id]);
+}

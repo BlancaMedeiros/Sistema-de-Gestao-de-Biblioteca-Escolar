@@ -2,15 +2,25 @@ import { Router } from 'express';
 import { z } from 'zod';
 
 import { pool } from '../../config/database.js';
+import { destroyOtherSessions } from '../../config/session-store.js';
 import { requireAuth } from '../../middleware/require-auth.js';
-import { autenticar } from './auth.service.js';
-import { findFuncionarioById } from './funcionarios.repository.js';
+import { alterarSenha, autenticar } from './auth.service.js';
+import { findFuncionarioById, updateFuncionarioNome } from './funcionarios.repository.js';
 
 export const authRouter = Router();
 
 const loginSchema = z.object({
   login: z.string().trim().min(1),
   senha: z.string().min(1),
+});
+
+const atualizarPerfilSchema = z.object({
+  nome: z.string().trim().min(1),
+});
+
+const alterarSenhaSchema = z.object({
+  senhaAtual: z.string().min(1),
+  novaSenha: z.string().min(8),
 });
 
 /**
@@ -158,6 +168,147 @@ authRouter.get('/me', requireAuth, async (request, response, next) => {
     response.status(200).json({
       data: { id: funcionario.id, nome: funcionario.nome, login: funcionario.login },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @openapi
+ * /me:
+ *   patch:
+ *     summary: Atualiza os dados permitidos do próprio perfil.
+ *     description: Hoje só permite alterar o nome. Login e senha têm rotas próprias.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nome]
+ *             properties:
+ *               nome:
+ *                 type: string
+ *                 example: Ana Bibliotecária
+ *     responses:
+ *       200:
+ *         description: Perfil atualizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   $ref: '#/components/schemas/FuncionarioPerfil'
+ *       401:
+ *         description: Sessão ausente ou expirada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Erro'
+ *       422:
+ *         description: Nome ausente ou vazio.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Erro'
+ */
+authRouter.patch('/me', requireAuth, async (request, response, next) => {
+  const parsed = atualizarPerfilSchema.safeParse(request.body);
+
+  if (!parsed.success) {
+    response.status(422).json({
+      error: {
+        code: 'DADOS_INVALIDOS',
+        message: 'Informe um nome válido.',
+        fields: parsed.error.flatten().fieldErrors,
+      },
+    });
+    return;
+  }
+
+  try {
+    const atualizado = await updateFuncionarioNome(
+      pool,
+      request.session.funcionarioId as number,
+      parsed.data.nome,
+    );
+
+    response.status(200).json({
+      data: { id: atualizado.id, nome: atualizado.nome, login: atualizado.login },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * @openapi
+ * /me/senha:
+ *   put:
+ *     summary: Altera a própria senha.
+ *     description: Invalida as demais sessões do funcionário; a sessão atual continua válida.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [senhaAtual, novaSenha]
+ *             properties:
+ *               senhaAtual:
+ *                 type: string
+ *                 format: password
+ *               novaSenha:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *     responses:
+ *       204:
+ *         description: Senha alterada.
+ *       401:
+ *         description: Sessão ausente/expirada, ou senha atual incorreta.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Erro'
+ *       422:
+ *         description: Nova senha ausente ou menor que 8 caracteres.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Erro'
+ */
+authRouter.put('/me/senha', requireAuth, async (request, response, next) => {
+  const parsed = alterarSenhaSchema.safeParse(request.body);
+
+  if (!parsed.success) {
+    response.status(422).json({
+      error: {
+        code: 'DADOS_INVALIDOS',
+        message: 'Informe a senha atual e uma nova senha com pelo menos 8 caracteres.',
+        fields: parsed.error.flatten().fieldErrors,
+      },
+    });
+    return;
+  }
+
+  try {
+    const funcionarioId = request.session.funcionarioId as number;
+    const resultado = await alterarSenha(pool, funcionarioId, parsed.data.senhaAtual, parsed.data.novaSenha);
+
+    if (resultado === 'senha_atual_invalida') {
+      response.status(401).json({
+        error: { code: 'SENHA_ATUAL_INVALIDA', message: 'Senha atual incorreta.' },
+      });
+      return;
+    }
+
+    await destroyOtherSessions(pool, funcionarioId, request.session.id);
+
+    response.status(204).send();
   } catch (error) {
     next(error);
   }

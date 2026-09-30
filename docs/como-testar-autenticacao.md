@@ -1,8 +1,8 @@
 # Como testar a autenticação de funcionário
 
-Roteiro manual para conferir a primeira fatia de negócio implementada: login, sessão e Swagger incremental. Cobre só o que existe hoje (`POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`) — não há rotas de acervo, leitores ou empréstimos ainda.
+Roteiro manual para conferir a primeira fatia de negócio implementada: login, sessão, perfil e Swagger incremental. Cobre só o que existe hoje (`POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me`, `PUT /api/v1/me/senha`) — não há rotas de acervo, leitores ou empréstimos ainda.
 
-Os testes automatizados (24 testes, `npm run test:backend`) já cobrem estes fluxos contra um MySQL real; este roteiro é para você ver o mesmo comportamento rodando de verdade, na sua máquina.
+Os testes automatizados (40 testes, `npm run test:backend`) já cobrem estes fluxos contra um MySQL real; este roteiro é para você ver o mesmo comportamento rodando de verdade, na sua máquina.
 
 ## 1. Pré-requisitos
 
@@ -89,6 +89,52 @@ try {
 }
 ```
 
+## 6.1. Testar o perfil (`PATCH /me` e `PUT /me/senha`)
+
+> **Atenção:** o passo de trocar a senha altera de verdade a conta `bibliotecaria.teste` no seu banco local. Depois de testar, rode o passo de "restaurar" no final desta seção antes de continuar usando a senha documentada (`Teste@123`) em outros testes.
+
+Continuando com o mesmo `$session` do passo 6 (logado como `bibliotecaria.teste`):
+
+```powershell
+$patch = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me -Method Patch `
+  -ContentType "application/json" -Body '{"nome":"Bibliotecaria Renomeada"}' -WebSession $session
+$patch.StatusCode   # esperado: 200
+$patch.Content       # esperado: nome já atualizado
+
+try {
+  Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me/senha -Method Put `
+    -ContentType "application/json" -Body '{"senhaAtual":"errada","novaSenha":"NovaSenha@123"}' -WebSession $session
+} catch {
+  $_.Exception.Response.StatusCode.value__   # esperado: 401
+}
+
+$senhaCerta = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me/senha -Method Put `
+  -ContentType "application/json" -Body '{"senhaAtual":"Teste@123","novaSenha":"NovaSenha@123"}' -WebSession $session
+$senhaCerta.StatusCode   # esperado: 204
+```
+
+Confirme que a senha antiga para de funcionar e a nova passa a funcionar:
+
+```powershell
+try {
+  Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/login -Method Post `
+    -ContentType "application/json" -Body '{"login":"bibliotecaria.teste","senha":"Teste@123"}'
+} catch {
+  $_.Exception.Response.StatusCode.value__   # esperado: 401 — senha antiga não vale mais
+}
+
+$nova = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/login -Method Post `
+  -ContentType "application/json" -Body '{"login":"bibliotecaria.teste","senha":"NovaSenha@123"}'
+$nova.StatusCode   # esperado: 200
+```
+
+**Restaurar o estado documentado** (deleta a conta e recria pela seed, com a senha de novo `Teste@123`):
+
+```powershell
+docker compose exec mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca -e "DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = \"bibliotecaria.teste\";"'
+npm run dev:seed:funcionarios
+```
+
 ## 7. Conferir que a sessão persiste no MySQL (não é MemoryStore)
 
 ```powershell
@@ -117,7 +163,11 @@ Esperado: todos os testes passando (nenhum `skip`, nenhum `fail`). Esses testes 
 - [ ] `GET /me` sem cookie → `401`.
 - [ ] `GET /me` com cookie válido → `200` com os dados do funcionário logado.
 - [ ] `POST /auth/logout` → `204`, e o `GET /me` seguinte volta a dar `401`.
-- [ ] `http://localhost:3000/api/docs` abre e lista as 3 rotas.
+- [ ] `PATCH /me` com nome válido → `200`, refletido no `GET /me` seguinte.
+- [ ] `PATCH /me` com nome vazio → `422`.
+- [ ] `PUT /me/senha` com senha atual errada → `401`, senha não muda.
+- [ ] `PUT /me/senha` com senha atual certa → `204`; login com a senha antiga passa a dar `401`, com a nova dá `200`.
+- [ ] `http://localhost:3000/api/docs` abre e lista as rotas de `/auth/*` e `/me`.
 - [ ] `npm run test:backend` passa 100%.
 
 ## O que esta fatia deliberadamente não cobre
