@@ -12,7 +12,10 @@
     "build:backend": "npm --prefix backend run build",
     "build:frontend": "npm --prefix frontend run build",
     "build:all": "npm run build:backend && npm run build:frontend",
-    "test:frontend": "docker compose run --rm frontend npm run test -- --watch=false"
+    "test:frontend": "docker compose run --rm frontend npm run test -- --watch=false",
+    "test:backend": "npm test --prefix backend",
+    "dev:migrate": "npm run migrate --prefix backend",
+    "dev:seed:funcionarios": "npm run seed:funcionarios --prefix backend"
   },
   "packageManager": "npm@11.6.2"
 }

@@ -2,6 +2,24 @@
 
 **Estado:** Cloud SQL, Secret Manager, Artifact Registry, Cloud Run e Firebase Hosting foram publicados no projeto `projeto-integrador-2-6352b`. A URL `https://projeto-integrador-2-6352b.web.app/` respondeu `200`; por ela, `/api/health` respondeu `ok` e `/api/ready` confirmou a conexão MySQL. O rewrite está fixado na revisão `biblioteca-api-00002-lml` do Cloud Run.
 
+> **Bloqueio antes do próximo push nesta branch:** o backend agora exige a variável `SESSION_SECRET` (usada para assinar o cookie de sessão do login). O workflow `deploy-firebase.yml` faz `gcloud run deploy` sem `--update-env-vars`/`--update-secrets`, ou seja, a revisão atual do Cloud Run **não tem** essa variável configurada. Se a imagem nova subir sem isso, o processo lança `A variável de ambiente SESSION_SECRET é obrigatória.` na inicialização e o serviço entra em crash-loop — derrubando `/api/health` e `/api/ready` também, já que nada consegue subir.
+>
+> Configurar **antes** de mesclar/enviar este incremento (executar manualmente; não é automatizado por este repositório):
+>
+> ```powershell
+> # 1. Gerar um segredo aleatório e guardar no Secret Manager (mesmo padrão já usado para DB_PASSWORD)
+> $bytes = [System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32)
+> [Convert]::ToBase64String($bytes) | gcloud secrets create biblioteca-session-secret --data-file=- --project projeto-integrador-2-6352b
+>
+> # 2. Vincular o segredo ao serviço Cloud Run existente, sem tocar no restante da configuração
+> gcloud run services update biblioteca-api `
+>   --project projeto-integrador-2-6352b `
+>   --region southamerica-east1 `
+>   --update-secrets=SESSION_SECRET=biblioteca-session-secret:latest
+> ```
+>
+> Depois disso, os próximos `gcloud run deploy` (via CI) preservam essa variável normalmente, como já fazem com as demais.
+
 ## Arquitetura
 
 ```text
@@ -81,4 +99,4 @@ Os testes do frontend ainda não são um requisito bloqueante: nesta data, a su�
 
 ## Limite atual
 
-Esta branch possui apenas a fundação técnica: saúde da API e conectividade MySQL. Não há migrations, endpoints de livros/usuários/empréstimos, autenticação ou consumo HTTP pelo Angular. Um deploy bem-sucedido comprova a infraestrutura, não a aplicação completa de biblioteca.
+Além da fundação técnica (saúde da API e conectividade MySQL), esta branch agora inclui autenticação de funcionário (login/logout/`/me`) e o Swagger incremental — ver `docs/arquitetura.md`. Isso não foi implantado em produção ainda (ver bloqueio de `SESSION_SECRET` acima) nem consumido pelo Angular. Não há migrations, endpoints de livros/usuários/empréstimos além dos de autenticação. Um deploy bem-sucedido comprova a infraestrutura e a autenticação isoladas, não a aplicação completa de biblioteca.
