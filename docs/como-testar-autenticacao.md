@@ -18,23 +18,23 @@ Copy-Item .env.example .env   # pule se já tiver um .env
 npm run dev
 ```
 
-Aguarde os três serviços (`mysql`, `backend`, `frontend`) ficarem de pé. Em outro terminal, confira:
+Aguarde os serviços ficarem de pé. Em outro terminal, confira:
 
 ```powershell
 npm run dev:status
 ```
 
-`backend` e `mysql` devem aparecer como `healthy`.
+`backend` e `mysql` devem aparecer como `healthy`. O serviço `migrate` aparece como `Exited (0)` — é o esperado: ele aplica as migrations pendentes e sai; o `backend` só inicia depois dele terminar com sucesso (veja `docker compose logs migrate`, deve mostrar `Migrations aplicadas: ...` na primeira vez ou `Nenhuma migration pendente.` depois).
 
-## 3. Aplicar as migrations
+## 3. (Opcional) Rodar as migrations manualmente
 
-Roda no host (o `database/` não é montado dentro do container do backend):
+Isso já aconteceu sozinho no passo anterior. Só é preciso rodar à mão se você quiser aplicar migrations sem subir a stack inteira (por exemplo, com só o `mysql` de pé):
 
 ```powershell
 npm run dev:migrate
 ```
 
-Esperado na primeira vez: `Migrations aplicadas: 0001_create_funcionarios.sql, 0002_create_sessoes.sql`. Rodando de novo, esperado: `Nenhuma migration pendente.` — é idempotente, pode rodar quantas vezes quiser.
+Idempotente — pode rodar quantas vezes quiser, inclusive junto com o serviço automático, sem conflito.
 
 ## 4. Criar as contas de teste
 
@@ -155,7 +155,8 @@ Esperado: todos os testes passando (nenhum `skip`, nenhum `fail`). Esses testes 
 
 ## 9. Checklist rápido
 
-- [ ] `npm run dev:migrate` roda sem erro e é idempotente.
+- [ ] `docker compose ps` mostra `migrate` como `Exited (0)` e `backend`/`mysql` como `healthy`.
+- [ ] `npm run dev:migrate` (manual) roda sem erro e é idempotente.
 - [ ] `npm run dev:seed:funcionarios` cria as contas e é idempotente (não duplica, não reseta senha).
 - [ ] Login com credenciais corretas → `200` + cookie.
 - [ ] Login com senha errada → `401`.

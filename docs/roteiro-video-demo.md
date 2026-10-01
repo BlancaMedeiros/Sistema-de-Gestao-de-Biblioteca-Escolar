@@ -6,7 +6,7 @@
 
 - [ ] `docker compose down` e suba de novo do zero (`npm run dev`), pra gravar um boot limpo em vez de containers que já estavam de pé.
 - [ ] Confirme que `.env` existe e tem `SESSION_SECRET`, `MYSQL_*` preenchidos (`Copy-Item .env.example .env` se for a primeira vez).
-- [ ] Rode `npm run dev:migrate` e `npm run dev:seed:funcionarios` **antes** de gravar, só pra confirmar que não vai dar erro ao vivo — mas grave rodando de novo mesmo assim (é idempotente, então repetir na gravação é seguro e mostra exatamente isso).
+- [ ] Rode `npm run dev` e `npm run dev:seed:funcionarios` **antes** de gravar, só pra confirmar que não vai dar erro ao vivo (migrations já rodam sozinhas como parte do `npm run dev`) — mas grave rodando de novo mesmo assim (tudo idempotente, então repetir na gravação é seguro e mostra exatamente isso).
 - [ ] Feche outras abas/apps que possam poluir a tela. Deixe preparadas 3 janelas: terminal, `http://localhost:3000/api/docs`, `http://localhost:8080` (Adminer).
 - [ ] Decida se vai demonstrar a troca de senha (`PUT /me/senha`) ao vivo. Se sim: **ela realmente muda a senha da conta `bibliotecaria.teste` no seu banco.** Depois da gravação, restaure com:
   ```powershell
@@ -32,24 +32,23 @@ npm run dev
 ```
 
 **Fala sugerida, enquanto sobe:**
-> "Um único comando sobe os três serviços: MySQL, a API e o frontend Angular, cada um no seu container, com hot reload pra desenvolvimento."
+> "Um único comando sobe o MySQL, aplica as migrations do banco automaticamente, e só depois inicia a API e o frontend Angular — cada um no seu container, com hot reload pra desenvolvimento."
 
 Quando estabilizar, em outro terminal:
 ```powershell
 npm run dev:status
 ```
-> "Aqui confirmo que os três estão de pé e saudáveis."
+> "Aqui confirmo que `backend` e `mysql` estão saudáveis. Esse `migrate` aparecendo como `Exited` não é erro — é um serviço que roda as migrations pendentes e sai; o backend só sobe depois que ele termina com sucesso."
 
-## Cena 3 — Migrations e dados de teste (≈45s)
+## Cena 3 — Dados de teste (≈30s)
 
 **Fazer:**
 ```powershell
-npm run dev:migrate
 npm run dev:seed:funcionarios
 ```
 
 **Fala sugerida:**
-> "As migrations criam o schema do banco de forma versionada — rodar de novo não faz nada, porque é idempotente. E aqui eu crio duas contas de funcionário com senha conhecida, só para teste local; se elas já existirem, o comando avisa e não altera nada."
+> "O schema do banco já foi criado automaticamente no passo anterior. Aqui eu crio duas contas de funcionário com senha conhecida, só para teste local; se elas já existirem, o comando avisa e não altera nada."
 
 ## Cena 4 — Swagger: o contrato da API (≈2min)
 

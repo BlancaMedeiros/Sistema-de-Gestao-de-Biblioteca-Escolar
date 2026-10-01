@@ -20,11 +20,7 @@ npm run dev
 
 Na primeira execução, o Docker baixará as imagens e instalará as dependências dentro dos containers. As alterações em `frontend/` e `backend/` são refletidas por hot reload.
 
-Com os containers de pé, aplique as migrations pendentes (roda no host, não dentro do container — veja [docs/arquitetura.md](docs/arquitetura.md#migrations)):
-
-```powershell
-npm run dev:migrate
-```
+As migrations rodam sozinhas: um serviço `migrate` aplica o que estiver pendente e o `backend` só inicia depois que ele terminar com sucesso (ver [docs/arquitetura.md](docs/arquitetura.md#migrations)). Em `docker compose ps` ele aparece como `Exited (0)` — é o esperado, não uma falha. Para rodar as migrations manualmente, sem subir a stack inteira, use `npm run dev:migrate`.
 
 Endereços locais:
 
@@ -49,7 +45,7 @@ Use `npm run dev:status` para ver o estado dos serviços e `npm run dev:logs` pa
 
 ## Criar contas de funcionário para testar
 
-Depois de rodar as migrations, crie as contas de desenvolvimento (login e senha conhecidos, só para uso local):
+Depois de subir o ambiente, crie as contas de desenvolvimento (login e senha conhecidos, só para uso local):
 
 ```powershell
 npm run dev:seed:funcionarios
