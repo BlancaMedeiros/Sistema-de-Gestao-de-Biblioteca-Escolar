@@ -19,7 +19,35 @@ services:
       retries: 20
       start_period: 15s
 
+  # Roda as migrations pendentes e sai (código 0 em sucesso). O `backend`
+  # só inicia depois que este serviço terminar com sucesso — ver
+  # `depends_on` abaixo. Reexecutar é seguro: é idempotente, só aplica o
+  # que ainda não foi aplicado. Aparecer como "Exited (0)" em
+  # `docker compose ps` é o estado esperado, não uma falha.
+  migrate:
+    image: biblioteca-escolar-backend-dev
+    build:
+      context: ./backend
+      target: development
+    command: ["npm", "run", "migrate"]
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:?Copie .env.example para .env e defina SESSION_SECRET}
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      - ./database:/database:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   backend:
+    image: biblioteca-escolar-backend-dev
     build:
       context: ./backend
       target: development
@@ -46,6 +74,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   frontend:
     build:
