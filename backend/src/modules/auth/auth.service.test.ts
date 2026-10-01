@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test } from 'vitest';
 
 import { pool } from '../../config/database.js';
-import { autenticar } from './auth.service.js';
-import { createFuncionario } from './funcionarios.repository.js';
-import { hashPassword } from './password.js';
+import { alterarSenha, autenticar } from './auth.service.js';
+import { createFuncionario, findFuncionarioById } from './funcionarios.repository.js';
+import { hashPassword, verifyPassword } from './password.js';
 
 describe('autenticar', () => {
   afterEach(async () => {
@@ -46,5 +46,40 @@ describe('autenticar', () => {
     const resultado = await autenticar(pool, 'teste-service-carla', 'senha-correta');
 
     expect(resultado).toBeNull();
+  });
+});
+
+describe('alterarSenha', () => {
+  afterEach(async () => {
+    await pool.query('DELETE FROM funcionarios WHERE login LIKE ?', ['teste-service-%']);
+  });
+
+  test('troca a senha quando a senha atual está correta', async () => {
+    const criado = await createFuncionario(pool, {
+      nome: 'Dani Teste',
+      login: 'teste-service-dani',
+      senhaHash: await hashPassword('senha-antiga'),
+    });
+
+    const resultado = await alterarSenha(pool, criado.id, 'senha-antiga', 'senha-nova-123');
+
+    expect(resultado).toBe('ok');
+    const atualizado = await findFuncionarioById(pool, criado.id);
+    await expect(verifyPassword(atualizado!.senha_hash, 'senha-nova-123')).resolves.toBe(true);
+    await expect(verifyPassword(atualizado!.senha_hash, 'senha-antiga')).resolves.toBe(false);
+  });
+
+  test('não troca a senha quando a senha atual está incorreta', async () => {
+    const criado = await createFuncionario(pool, {
+      nome: 'Edu Teste',
+      login: 'teste-service-edu',
+      senhaHash: await hashPassword('senha-antiga'),
+    });
+
+    const resultado = await alterarSenha(pool, criado.id, 'senha-errada', 'senha-nova-123');
+
+    expect(resultado).toBe('senha_atual_invalida');
+    const atualizado = await findFuncionarioById(pool, criado.id);
+    await expect(verifyPassword(atualizado!.senha_hash, 'senha-antiga')).resolves.toBe(true);
   });
 });

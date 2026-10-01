@@ -1,7 +1,7 @@
 import type { Pool } from 'mysql2/promise';
 
-import { findFuncionarioByLogin } from './funcionarios.repository.js';
-import { verifyPassword } from './password.js';
+import { findFuncionarioById, findFuncionarioByLogin, updateFuncionarioSenha } from './funcionarios.repository.js';
+import { hashPassword, verifyPassword } from './password.js';
 
 export interface FuncionarioAutenticado {
   id: number;
@@ -23,4 +23,30 @@ export async function autenticar(pool: Pool, login: string, senha: string): Prom
   }
 
   return { id: funcionario.id, nome: funcionario.nome, login: funcionario.login };
+}
+
+export type ResultadoAlterarSenha = 'ok' | 'senha_atual_invalida';
+
+export async function alterarSenha(
+  pool: Pool,
+  funcionarioId: number,
+  senhaAtual: string,
+  novaSenha: string,
+): Promise<ResultadoAlterarSenha> {
+  const funcionario = await findFuncionarioById(pool, funcionarioId);
+
+  if (!funcionario) {
+    throw new Error(`Funcionário ${funcionarioId} não encontrado ao tentar alterar a senha.`);
+  }
+
+  const senhaAtualValida = await verifyPassword(funcionario.senha_hash, senhaAtual);
+
+  if (!senhaAtualValida) {
+    return 'senha_atual_invalida';
+  }
+
+  const novaSenhaHash = await hashPassword(novaSenha);
+  await updateFuncionarioSenha(pool, funcionarioId, novaSenhaHash);
+
+  return 'ok';
 }

@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, test } from 'vitest';
 
 import { pool } from '../../config/database.js';
-import { createFuncionario, findFuncionarioByLogin } from './funcionarios.repository.js';
+import {
+  createFuncionario,
+  findFuncionarioByLogin,
+  updateFuncionarioNome,
+  updateFuncionarioSenha,
+} from './funcionarios.repository.js';
 
 describe('funcionarios.repository', () => {
   afterEach(async () => {
@@ -56,5 +61,30 @@ describe('funcionarios.repository', () => {
         senhaHash: 'hash-fake-4',
       }),
     ).rejects.toMatchObject({ code: 'ER_DUP_ENTRY' });
+  });
+
+  test('updateFuncionarioNome altera o nome e mantém os demais campos', async () => {
+    const criado = await createFuncionario(pool, {
+      nome: 'Nome Antigo',
+      login: 'teste-repo-renomeado',
+      senhaHash: 'hash-fake-5',
+    });
+
+    const atualizado = await updateFuncionarioNome(pool, criado.id, 'Nome Novo');
+
+    expect(atualizado).toMatchObject({ id: criado.id, nome: 'Nome Novo', login: 'teste-repo-renomeado' });
+  });
+
+  test('updateFuncionarioSenha altera o hash armazenado', async () => {
+    const criado = await createFuncionario(pool, {
+      nome: 'Vai Trocar Senha',
+      login: 'teste-repo-trocasenha',
+      senhaHash: 'hash-antigo',
+    });
+
+    await updateFuncionarioSenha(pool, criado.id, 'hash-novo');
+
+    const [linhas] = await pool.query('SELECT senha_hash FROM funcionarios WHERE id = ?', [criado.id]);
+    expect((linhas as Array<{ senha_hash: string }>)[0].senha_hash).toBe('hash-novo');
   });
 });

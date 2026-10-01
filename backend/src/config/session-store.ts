@@ -67,3 +67,13 @@ export class MySqlSessionStore extends Store {
       .catch((error: unknown) => callback?.(error));
   }
 }
+
+// Usado na troca de senha: invalida as demais sessões do funcionário (em
+// caso de a conta ter sido comprometida em outro dispositivo), preservando
+// a sessão atual para não forçar um novo login imediatamente.
+export async function destroyOtherSessions(pool: Pool, funcionarioId: number, sidAtual: string): Promise<void> {
+  await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ? AND id != ?", [
+    funcionarioId,
+    sidAtual,
+  ]);
+}
