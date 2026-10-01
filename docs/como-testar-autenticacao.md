@@ -2,7 +2,7 @@
 
 Roteiro manual para conferir a primeira fatia de negócio implementada: login, sessão, perfil e Swagger incremental. Cobre só o que existe hoje (`POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me`, `PUT /api/v1/me/senha`) — não há rotas de acervo, leitores ou empréstimos ainda.
 
-Os testes automatizados (40 testes, `npm run test:backend`) já cobrem estes fluxos contra um MySQL real; este roteiro é para você ver o mesmo comportamento rodando de verdade, na sua máquina.
+Os testes automatizados (40 testes, `npm run test:backend`) já cobrem estes fluxos contra um MySQL real; este roteiro é para você ver o mesmo comportamento rodando de verdade, na sua máquina, e se familiarizar antes de gravar a demonstração (`docs/roteiro-video-demo.md`).
 
 ## 1. Pré-requisitos
 
@@ -145,6 +145,8 @@ docker compose exec mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e "USE 
 
 Durante uma sessão ativa (depois do login, antes do logout) o contador deve ser maior que zero; depois do logout, a linha correspondente some.
 
+Prefere ver visualmente, sem linha de comando? Abra o Adminer em `http://localhost:8080` (login: servidor `mysql`, usuário/senha do `.env`, base `biblioteca`) e navegue nas tabelas `sessoes` e `funcionarios` — ver `README.md`.
+
 ## 8. Rodar a suíte automatizada
 
 ```powershell
@@ -174,3 +176,7 @@ Esperado: todos os testes passando (nenhum `skip`, nenhum `fail`). Esses testes 
 ## O que esta fatia deliberadamente não cobre
 
 Sem CSRF completo, sem limite de tentativas de login, sem papéis distintos (ADMIN/OPERADOR — hoje é um único nível, "funcionário autorizado"), sem nenhuma rota de acervo/leitores/empréstimos. Ver `docs/arquitetura.md` para o que vem a seguir.
+
+## Pronto para gravar?
+
+Depois de passar por este roteiro e se sentir confortável com os fluxos, siga `docs/roteiro-video-demo.md` para a gravação em si — é mais curto, pensado para ~5-6 minutos de vídeo, e não repete as explicações de "por quê", só o "o quê mostrar" e "o que falar".
