@@ -131,17 +131,17 @@ $nova.StatusCode   # esperado: 200
 **Restaurar o estado documentado** (deleta a conta e recria pela seed, com a senha de novo `Teste@123`):
 
 ```powershell
-docker compose exec mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca -e "DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = \"bibliotecaria.teste\";"'
+"DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = 'bibliotecaria.teste';" | docker compose exec -T mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca'
 npm run dev:seed:funcionarios
 ```
 
 ## 7. Conferir que a sessão persiste no MySQL (não é MemoryStore)
 
 ```powershell
-docker compose exec mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e "USE biblioteca; SELECT COUNT(*) AS sessoes FROM sessoes;"'
+"SELECT COUNT(*) AS sessoes FROM sessoes;" | docker compose exec -T mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca'
 ```
 
-(`$MYSQL_ROOT_PASSWORD` aí é a variável de ambiente *dentro do container* `mysql`, já definida pelo `compose.yaml` — não precisa existir no seu PowerShell.)
+(`$MYSQL_ROOT_PASSWORD` aí é a variável de ambiente *dentro do container* `mysql`, já definida pelo `compose.yaml` — não precisa existir no seu PowerShell. O SQL vai pela entrada padrão, entre aspas duplas do PowerShell; textos dentro do SQL usam aspas **simples**, porque o MySQL roda em modo ANSI, igual ao de produção — `"texto"` seria lido como nome de coluna.)
 
 Durante uma sessão ativa (depois do login, antes do logout) o contador deve ser maior que zero; depois do logout, a linha correspondente some.
 
