@@ -1,20 +1,25 @@
-import mysql, { type RowDataPacket } from 'mysql2/promise';
+import mysql, { type PoolOptions, type RowDataPacket } from 'mysql2/promise';
 
-import { env } from './env.js';
+import { env, type DatabaseEnv } from './env.js';
 
-const connection = env.database.socketPath
-  ? { socketPath: env.database.socketPath }
-  : { host: env.database.host, port: env.database.port };
+export function buildPoolOptions(database: DatabaseEnv): PoolOptions {
+  const connection = database.socketPath
+    ? { socketPath: database.socketPath }
+    : { host: database.host, port: database.port };
 
-export const pool = mysql.createPool({
-  ...connection,
-  database: env.database.name,
-  user: env.database.user,
-  password: env.database.password,
-  waitForConnections: true,
-  connectionLimit: 10,
-  enableKeepAlive: true,
-});
+  return {
+    ...connection,
+    database: database.name,
+    user: database.user,
+    password: database.password,
+    ...(database.sslCa ? { ssl: { ca: database.sslCa, rejectUnauthorized: true } } : {}),
+    waitForConnections: true,
+    connectionLimit: database.connectionLimit,
+    enableKeepAlive: true,
+  };
+}
+
+export const pool = mysql.createPool(buildPoolOptions(env.database));
 
 export async function databaseIsReady(): Promise<boolean> {
   const [rows] = await pool.query<RowDataPacket[]>('SELECT 1 AS ready');

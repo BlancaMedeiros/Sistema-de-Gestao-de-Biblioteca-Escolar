@@ -25,7 +25,7 @@ Navegador -> frontend:4200 -> backend:3000 -> mysql:3306
 | `frontend` | Angular em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
 | `migrate` | Aplica as migrations pendentes e sai; `backend` espera ele terminar com sucesso | Não persiste nada; só executa contra o `mysql` |
 | `backend` | API Express em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
-| `mysql` | Banco relacional local | Dados no volume `mysql_data` |
+| `mysql` | Banco relacional local, MySQL 8.4 com o mesmo `sql_mode` ANSI do banco de produção (Aiven) | Dados no volume `mysql_data` |
 | `adminer` | Interface web para inspecionar o MySQL manualmente (`http://localhost:8080`) | Não persiste nada; só front-end para o `mysql` |
 
 `migrate` aparece como `Exited (0)` em `docker compose ps` depois de rodar — é o estado esperado de um serviço que faz seu trabalho uma vez e termina, não uma falha.
@@ -63,6 +63,14 @@ npm run dev:migrate
 
 Roda no host, contra a porta do MySQL publicada pelo Compose, usando `backend/src/config/local-env.ts` para mapear as variáveis `MYSQL_*` do `.env` para o que o backend espera.
 
+### Produção
+
+`npm run prod:migrate` aplica as migrations no MySQL do Aiven (TLS, usuário da aplicação), lendo `.env.aiven` e `aiven-ca.pem` da raiz do repositório. O deploy não faz isso sozinho — ver `docs/deploy-firebase-cloud-run.md`.
+
+### Regras para SQL novo
+
+O banco de produção roda em modo ANSI e o MySQL local foi configurado igual: strings sempre entre aspas **simples** (`"texto"` é lido como nome de coluna), `||` é concatenação, e toda tabela precisa de chave primária (`sql_require_primary_key` no Aiven).
+
 ## Autenticação (primeira fatia implementada)
 
 - `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me` (só o campo `nome` por enquanto) e `PUT /api/v1/me/senha`, cobertos por testes de integração (`backend/src/modules/auth/*.test.ts`) contra o MySQL real.
@@ -87,5 +95,8 @@ Cada rota implementada ganha um bloco `@openapi` em JSDoc acima do handler, em `
 2. ~~Definir o contrato OpenAPI e disponibilizar Swagger UI~~ — feito, crescendo por rota.
 3. Implementar leitores, livros por quantidade e operações de empréstimo (próximas fatias verticais).
 4. Substituir os mocks Angular por serviços HTTP, começando por login/`/me`.
-5. Antes de qualquer novo `push` para `feat/backend-foundation`: configurar `SESSION_SECRET` no Cloud Run (ver `docs/deploy-firebase-cloud-run.md`) — sem isso, o deploy automático derruba o serviço em produção.
+5. ~~Configurar `SESSION_SECRET` no Cloud Run~~ — feito (Secret Manager).
 6. CSRF completo e limite de tentativas de login, quando outras rotas de escrita existirem.
+7. Comando de provisionamento de conta de funcionário para produção (senha lida de variável/segredo, nunca fixa no código), se for preciso login na URL pública.
+8. Rodar as migrations de produção dentro do próprio deploy, em vez do passo manual `npm run prod:migrate`.
+9. Excluir a instância Cloud SQL pausada depois que o Aiven estiver validado em produção.

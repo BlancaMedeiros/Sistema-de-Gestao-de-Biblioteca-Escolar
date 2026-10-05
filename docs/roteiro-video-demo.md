@@ -10,7 +10,7 @@
 - [ ] Feche outras abas/apps que possam poluir a tela. Deixe preparadas 3 janelas: terminal, `http://localhost:3000/api/docs`, `http://localhost:8080` (Adminer).
 - [ ] Decida se vai demonstrar a troca de senha (`PUT /me/senha`) ao vivo. Se sim: **ela realmente muda a senha da conta `bibliotecaria.teste` no seu banco.** Depois da gravação, restaure com:
   ```powershell
-  docker compose exec mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca -e "DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = \"bibliotecaria.teste\";"'
+  "DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = 'bibliotecaria.teste';" | docker compose exec -T mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca'
   npm run dev:seed:funcionarios
   ```
   Se preferir simplicidade, pule essa rota no vídeo e apenas cite que ela existe.
