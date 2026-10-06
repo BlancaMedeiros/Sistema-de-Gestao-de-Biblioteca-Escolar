@@ -23,7 +23,7 @@ Navegador -> frontend:4200 -> backend:3000 -> mysql:3306
 | Serviço | Papel | Persistência |
 | --- | --- | --- |
 | `frontend` | Angular em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
-| `migrate` | Aplica as migrations pendentes e sai; `backend` espera ele terminar com sucesso | Não persiste nada; só executa contra o `mysql` |
+| `migrate` | Aplica as migrations pendentes, cria as contas de desenvolvimento (seed) e sai; `backend` espera ele terminar com sucesso | Não persiste nada; só executa contra o `mysql` |
 | `backend` | API Express em modo desenvolvimento, com hot reload | Código vem do Git por bind mount |
 | `mysql` | Banco relacional local, MySQL 8.4 com o mesmo `sql_mode` ANSI do banco de produção (Aiven) | Dados no volume `mysql_data` |
 | `adminer` | Interface web para inspecionar o MySQL manualmente (`http://localhost:8080`) | Não persiste nada; só front-end para o `mysql` |
@@ -47,7 +47,9 @@ Esses endpoints não validam migrations, autenticação ou regras da biblioteca.
 
 ### Automático, via `docker compose`
 
-O serviço `migrate` do `compose.yaml` roda `npm run migrate` contra o MySQL do próprio Compose e sai; `backend` declara `depends_on: migrate: condition: service_completed_successfully`, ou seja, só inicia depois que as migrations pendentes forem aplicadas com sucesso. Isso vale tanto para `npm run dev` quanto para `docker compose up` chamado direto.
+O serviço `migrate` do `compose.yaml` roda `npm run migrate` e, em seguida, `npm run seed:funcionarios` (contas de desenvolvimento, ver [Autenticação](#autenticação-primeira-fatia-implementada)) contra o MySQL do próprio Compose e sai; `backend` declara `depends_on: migrate: condition: service_completed_successfully`, ou seja, só inicia depois que as migrations pendentes forem aplicadas e as contas de teste existirem. Isso vale tanto para `npm run dev` quanto para `docker compose up` chamado direto.
+
+O `migrate` depende do healthcheck do `mysql`, que faz o ping **via TCP** (`--protocol=TCP -h 127.0.0.1`). Na primeira subida, com o volume `mysql_data` vazio, o entrypoint da imagem roda um servidor temporário sem rede (`port: 0`) para criar banco e usuário; um ping via socket já responderia nessa fase e o `migrate` falharia com `ECONNREFUSED` ao tentar conectar por TCP. Esse erro foi reproduzido numa subida do zero em 06/10/2026 com o ping via socket, e não ocorreu na subida seguinte do zero com o ping via TCP.
 
 Ele usa a mesma imagem de desenvolvimento do `backend` (`image: biblioteca-escolar-backend-dev`, compartilhada entre os dois serviços para não buildar duas vezes), com o bind mount extra `./database:/database:ro` — único lugar onde a pasta `database/` é montada dentro de um container. A resolução de caminho em `backend/src/config/local-env.ts` (três níveis acima do próprio arquivo) cai exatamente em `/database/migrations` dentro do container, sem precisar de configuração especial para o caso containerizado.
 
@@ -78,7 +80,7 @@ O banco de produção roda em modo ANSI e o MySQL local foi configurado igual: s
 - Um único papel — "funcionário autorizado" — sem distinção ADMIN/OPERADOR por enquanto, para reduzir escopo desta fatia. Tabela `funcionarios` (login único, hash Argon2id da senha).
 - Sessão persistida na tabela `sessoes`, via `backend/src/config/session-store.ts`: uma implementação própria de `express-session.Store` sobre o MySQL, no lugar do `MemoryStore` padrão (que perde as sessões a cada reinício do processo e não escala para múltiplas instâncias). Cookie `__session`, `HttpOnly`, `SameSite=Lax`, `Secure` em produção; a sessão é regenerada no login.
 - **Por que `__session` e `trust proxy`:** o Firebase Hosting descarta das requisições repassadas ao Cloud Run qualquer cookie com outro nome. E o HTTPS termina no proxy do Google, então o Express recebe HTTP com `X-Forwarded-Proto: https`; sem `app.set('trust proxy', 1)` ele trata a conexão como insegura e o `express-session` deixa de enviar o cookie `Secure` (grava a sessão no banco, mas o navegador nunca recebe o cookie). `sessao-producao.test.ts` reproduz esse cenário.
-- Contas de desenvolvimento criadas por `npm run dev:seed:funcionarios` (`backend/src/db/seed-funcionarios.ts` + `run-seed-funcionarios-cli.ts`), com login e senha conhecidos e fixos no código — deliberado, só para uso local/demo. Idempotente por login (não recria nem sobrescreve senha de quem já existe; nunca apaga dados) e recusa rodar com `NODE_ENV=production`. Credenciais em `README.md`.
+- Contas de desenvolvimento criadas automaticamente pelo serviço `migrate` a cada `npm run dev` (ou manualmente por `npm run dev:seed:funcionarios`, que roda no host) (`backend/src/db/seed-funcionarios.ts` + `run-seed-funcionarios-cli.ts`), com login e senha conhecidos e fixos no código — deliberado, só para uso local/demo. Idempotente por login (não recria nem sobrescreve senha de quem já existe; nunca apaga dados) e recusa rodar com `NODE_ENV=production`. Credenciais em `README.md`.
 - Contas reais (inclusive de produção): `npm run dev:funcionario:criar` (banco local) ou `npm run prod:funcionario:criar` (Aiven). Pergunta nome e login, pede a senha duas vezes sem mostrá-la na tela e, em produção, exige digitar `sim`. Senha mínima de 8 caracteres (mesma regra da troca de senha, `SENHA_MINIMA` em `password.ts`); login repetido é recusado sem alterar a conta existente. Núcleo em `modules/auth/provisionar-funcionario.ts`, comando em `db/run-criar-funcionario-cli.ts`.
 - **Deliberadamente fora desta fatia:** proteção CSRF, limite de tentativas de login, papéis ADMIN/OPERADOR. Nenhuma outra rota depende de autenticação ainda, porque não existe nenhuma outra rota de negócio implementada.
 

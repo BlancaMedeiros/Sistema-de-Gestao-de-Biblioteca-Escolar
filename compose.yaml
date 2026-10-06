@@ -18,23 +18,29 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      # Ping via TCP, não via socket: na primeira subida (volume vazio) o
+      # entrypoint roda um servidor temporário sem rede (port: 0) para criar
+      # banco e usuário. Pelo socket ele já responderia, e o `migrate`
+      # tentaria conectar por TCP antes do servidor definitivo (ECONNREFUSED).
+      test: ["CMD-SHELL", "mysqladmin ping --protocol=TCP -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
       interval: 5s
       timeout: 5s
       retries: 20
       start_period: 15s
 
-  # Roda as migrations pendentes e sai (código 0 em sucesso). O `backend`
-  # só inicia depois que este serviço terminar com sucesso — ver
-  # `depends_on` abaixo. Reexecutar é seguro: é idempotente, só aplica o
-  # que ainda não foi aplicado. Aparecer como "Exited (0)" em
-  # `docker compose ps` é o estado esperado, não uma falha.
+  # Roda as migrations pendentes, cria as contas de desenvolvimento
+  # (seed:funcionarios) e sai (código 0 em sucesso). O `backend` só inicia
+  # depois que este serviço terminar com sucesso — ver `depends_on` abaixo.
+  # Reexecutar é seguro: os dois passos são idempotentes (só aplicam o que
+  # falta; contas existentes não são recriadas nem têm a senha alterada).
+  # Aparecer como "Exited (0)" em `docker compose ps` é o estado esperado,
+  # não uma falha.
   migrate:
     image: biblioteca-escolar-backend-dev
     build:
       context: ./backend
       target: development
-    command: ["npm", "run", "migrate"]
+    command: ["sh", "-c", "npm run migrate && npm run seed:funcionarios"]
     environment:
       NODE_ENV: development
       DB_HOST: mysql

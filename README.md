@@ -20,7 +20,7 @@ npm run dev
 
 Na primeira execução, o Docker baixará as imagens e instalará as dependências dentro dos containers. As alterações em `frontend/` e `backend/` são refletidas por hot reload.
 
-As migrations rodam sozinhas: um serviço `migrate` aplica o que estiver pendente e o `backend` só inicia depois que ele terminar com sucesso (ver [docs/arquitetura.md](docs/arquitetura.md#migrations)). Em `docker compose ps` ele aparece como `Exited (0)` — é o esperado, não uma falha. Para rodar as migrations manualmente, sem subir a stack inteira, use `npm run dev:migrate`.
+As migrations e as contas de teste são criadas sozinhas: um serviço `migrate` aplica as migrations pendentes, cria as [contas de funcionário para testar](#contas-de-funcionário-para-testar) e o `backend` só inicia depois que ele terminar com sucesso (ver [docs/arquitetura.md](docs/arquitetura.md#migrations)). Em `docker compose ps` ele aparece como `Exited (0)` — é o esperado, não uma falha. Para rodar as migrations manualmente, sem subir a stack inteira, use `npm run dev:migrate`.
 
 Endereços locais:
 
@@ -43,22 +43,26 @@ Com a stack em execução, abra `http://localhost:3000/ready`. A resposta deve c
 
 Use `npm run dev:status` para ver o estado dos serviços e `npm run dev:logs` para acompanhar os logs.
 
-## Criar contas de funcionário para testar
+## Contas de funcionário para testar
 
-Depois de subir o ambiente, crie as contas de desenvolvimento (login e senha conhecidos, só para uso local):
-
-```powershell
-npm run dev:seed:funcionarios
-```
-
-Idempotente: pode rodar quantas vezes quiser — contas que já existem não são recriadas nem têm a senha alterada, e nada é apagado. O comando lista no console o que criou e o que já existia, e sempre termina imprimindo as credenciais:
+O `npm run dev` já cria as contas de desenvolvimento (login e senha conhecidos, só para uso local) — não é preciso rodar nada:
 
 | Login | Senha |
 | --- | --- |
 | `bibliotecaria.teste` | `Teste@123` |
 | `funcionaria.teste` | `Teste@123` |
 
-Esse script recusa rodar com `NODE_ENV=production` (contas com senha fixa no código não devem existir num banco de produção).
+A seed roda a cada subida e é idempotente: contas que já existem não são recriadas nem têm a senha alterada, e nada é apagado. O resultado aparece em `docker compose logs migrate`. O script recusa rodar com `NODE_ENV=production` (contas com senha fixa no código não devem existir num banco de produção).
+
+### Comandos que rodam fora do Docker
+
+`dev:seed:funcionarios`, `dev:funcionario:criar`, `dev:migrate` e `test:backend` rodam na sua máquina, não no container, e precisam das dependências do backend instaladas localmente. Na primeira vez:
+
+```powershell
+npm ci --prefix backend
+```
+
+Para recriar as contas de teste sem reiniciar a stack (por exemplo, depois de apagar uma delas): `npm run dev:seed:funcionarios`.
 
 Para criar uma conta com senha escolhida por você (digitada sem aparecer na tela):
 

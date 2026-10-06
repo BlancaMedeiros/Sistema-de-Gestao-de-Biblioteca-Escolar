@@ -6,7 +6,7 @@
 
 - [ ] `docker compose down` e suba de novo do zero (`npm run dev`), pra gravar um boot limpo em vez de containers que já estavam de pé.
 - [ ] Confirme que `.env` existe e tem `SESSION_SECRET`, `MYSQL_*` preenchidos (`Copy-Item .env.example .env` se for a primeira vez).
-- [ ] Rode `npm run dev` e `npm run dev:seed:funcionarios` **antes** de gravar, só pra confirmar que não vai dar erro ao vivo (migrations já rodam sozinhas como parte do `npm run dev`) — mas grave rodando de novo mesmo assim (tudo idempotente, então repetir na gravação é seguro e mostra exatamente isso).
+- [ ] Rode `npm run dev` **antes** de gravar, só pra confirmar que não vai dar erro ao vivo (migrations e contas de teste já são criadas sozinhas como parte do `npm run dev`) — mas grave rodando de novo mesmo assim (tudo idempotente, então repetir na gravação é seguro e mostra exatamente isso).
 - [ ] Feche outras abas/apps que possam poluir a tela. Deixe preparadas 3 janelas: terminal, `http://localhost:3000/api/docs`, `http://localhost:8080` (Adminer).
 - [ ] Decida se vai demonstrar a troca de senha (`PUT /me/senha`) ao vivo. Se sim: **ela realmente muda a senha da conta `bibliotecaria.teste` no seu banco.** Depois da gravação, restaure com:
   ```powershell
@@ -32,23 +32,23 @@ npm run dev
 ```
 
 **Fala sugerida, enquanto sobe:**
-> "Um único comando sobe o MySQL, aplica as migrations do banco automaticamente, e só depois inicia a API e o frontend Angular — cada um no seu container, com hot reload pra desenvolvimento."
+> "Um único comando sobe o MySQL, aplica as migrations do banco e cria as contas de teste automaticamente, e só depois inicia a API e o frontend Angular — cada um no seu container, com hot reload pra desenvolvimento."
 
 Quando estabilizar, em outro terminal:
 ```powershell
 npm run dev:status
 ```
-> "Aqui confirmo que `backend` e `mysql` estão saudáveis. Esse `migrate` aparecendo como `Exited` não é erro — é um serviço que roda as migrations pendentes e sai; o backend só sobe depois que ele termina com sucesso."
+> "Aqui confirmo que `backend` e `mysql` estão saudáveis. Esse `migrate` aparecendo como `Exited` não é erro — é um serviço que roda as migrations pendentes, cria as contas de teste e sai; o backend só sobe depois que ele termina com sucesso."
 
 ## Cena 3 — Dados de teste (≈30s)
 
 **Fazer:**
 ```powershell
-npm run dev:seed:funcionarios
+docker compose logs migrate
 ```
 
 **Fala sugerida:**
-> "O schema do banco já foi criado automaticamente no passo anterior. Aqui eu crio duas contas de funcionário com senha conhecida, só para teste local; se elas já existirem, o comando avisa e não altera nada."
+> "No mesmo boot, depois de criar o schema, o serviço `migrate` criou duas contas de funcionário com senha conhecida, só para teste local. A cada subida ele confere de novo: se elas já existem, avisa e não altera nada."
 
 ## Cena 4 — Swagger: o contrato da API (≈2min)
 

@@ -24,7 +24,7 @@ Aguarde os serviços ficarem de pé. Em outro terminal, confira:
 npm run dev:status
 ```
 
-`backend` e `mysql` devem aparecer como `healthy`. O serviço `migrate` aparece como `Exited (0)` — é o esperado: ele aplica as migrations pendentes e sai; o `backend` só inicia depois dele terminar com sucesso (veja `docker compose logs migrate`, deve mostrar `Migrations aplicadas: ...` na primeira vez ou `Nenhuma migration pendente.` depois).
+`backend` e `mysql` devem aparecer como `healthy`. O serviço `migrate` aparece como `Exited (0)` — é o esperado: ele aplica as migrations pendentes, cria as contas de teste e sai; o `backend` só inicia depois dele terminar com sucesso (veja `docker compose logs migrate`, deve mostrar `Migrations aplicadas: ...` na primeira vez ou `Nenhuma migration pendente.` depois, seguido do resultado da seed — passo 4).
 
 ## 3. (Opcional) Rodar as migrations manualmente
 
@@ -36,18 +36,22 @@ npm run dev:migrate
 
 Idempotente — pode rodar quantas vezes quiser, inclusive junto com o serviço automático, sem conflito.
 
-## 4. Criar as contas de teste
+## 4. Conferir as contas de teste
+
+O `npm run dev` já criou as contas (o serviço `migrate` roda a seed logo depois das migrations). Confira no log:
 
 ```powershell
-npm run dev:seed:funcionarios
+docker compose logs migrate
 ```
 
-Esperado na primeira vez: uma linha `✔ criado: login=... id=...` por conta. Rodando de novo: `… já existia (nada foi alterado)` para as duas — confirma que a seed não duplica nem reseta senha. O comando sempre termina imprimindo as credenciais:
+Esperado na primeira subida: uma linha `✔ criado: login=... id=...` por conta. Nas subidas seguintes: `… já existia (nada foi alterado)` para as duas — confirma que a seed não duplica nem reseta senha. O log sempre termina com as credenciais:
 
 | Login | Senha |
 | --- | --- |
 | `bibliotecaria.teste` | `Teste@123` |
 | `funcionaria.teste` | `Teste@123` |
+
+Para recriar as contas sem reiniciar a stack, há `npm run dev:seed:funcionarios` — ele roda no host, então exige `npm ci --prefix backend` na primeira vez.
 
 ## 5. Testar pelo Swagger UI
 
@@ -159,7 +163,7 @@ Esperado: todos os testes passando (nenhum `skip`, nenhum `fail`). Esses testes 
 
 - [ ] `docker compose ps` mostra `migrate` como `Exited (0)` e `backend`/`mysql` como `healthy`.
 - [ ] `npm run dev:migrate` (manual) roda sem erro e é idempotente.
-- [ ] `npm run dev:seed:funcionarios` cria as contas e é idempotente (não duplica, não reseta senha).
+- [ ] `docker compose logs migrate` mostra as contas de teste criadas na primeira subida e `já existia` nas seguintes (não duplica, não reseta senha).
 - [ ] Login com credenciais corretas → `200` + cookie.
 - [ ] Login com senha errada → `401`.
 - [ ] Login com corpo incompleto (`{}`) → `422`.
