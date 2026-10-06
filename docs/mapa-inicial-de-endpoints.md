@@ -19,12 +19,12 @@ Definir as operações mínimas da API para orientar a divisão do trabalho entr
 | --- | --- | --- | --- |
 | Técnica | `GET /api/health` | Verificar se a API está em execução | Disponível |
 | Técnica | `GET /api/ready` | Verificar a conexão com o MySQL | Disponível |
-| Sessão | `POST /api/v1/auth/login` | Iniciar a sessão de um funcionário | Disponível (testado localmente; ainda não implantado) |
-| Sessão | `POST /api/v1/auth/logout` | Encerrar a sessão atual | Disponível (testado localmente; ainda não implantado) |
-| Sessão | `GET /api/v1/me` | Obter perfil e permissões da sessão atual | Disponível (testado localmente; ainda não implantado) |
-| Perfil | `PATCH /api/v1/me` | Atualizar dados permitidos do próprio perfil | Disponível (só o campo `nome` por enquanto; testado localmente, ainda não implantado) |
-| Perfil | `PUT /api/v1/me/senha` | Alterar a própria senha | Disponível (invalida as demais sessões do funcionário; testado localmente, ainda não implantado) |
-| Funcionários | `POST /api/v1/funcionarios` | Cadastrar outro funcionário com a mesma permissão | Proposta |
+| Sessão | `POST /api/v1/auth/login` | Iniciar a sessão de um funcionário | Disponível em produção |
+| Sessão | `POST /api/v1/auth/logout` | Encerrar a sessão atual | Disponível em produção |
+| Sessão | `GET /api/v1/me` | Obter perfil e permissões da sessão atual | Disponível em produção |
+| Perfil | `PATCH /api/v1/me` | Atualizar dados permitidos do próprio perfil | Disponível em produção (só o campo `nome` por enquanto) |
+| Perfil | `PUT /api/v1/me/senha` | Alterar a própria senha | Disponível em produção (invalida as demais sessões do funcionário) |
+| Funcionários | `POST /api/v1/funcionarios` | Cadastrar outro funcionário com a mesma permissão | Proposta — por enquanto, via comando `npm run prod:funcionario:criar` |
 | Acervo | `GET /api/v1/livros`<br>`POST /api/v1/livros` | Listar, buscar e cadastrar livros | Proposta |
 | Acervo | `GET /api/v1/livros/:id`<br>`PATCH /api/v1/livros/:id`<br>`DELETE /api/v1/livros/:id` | Consultar, editar ou inativar um livro | Proposta |
 | Leitores | `GET /api/v1/usuarios`<br>`POST /api/v1/usuarios` | Listar, buscar e cadastrar leitores | Proposta |

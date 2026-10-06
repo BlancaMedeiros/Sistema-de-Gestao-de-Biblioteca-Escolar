@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "migrate": "tsx src/db/run-migrations-cli.ts",
     "migrate:aiven": "tsx src/db/run-migrations-aiven-cli.ts",
+    "funcionario:criar": "tsx src/db/run-criar-funcionario-cli.ts",
     "seed:funcionarios": "tsx src/db/run-seed-funcionarios-cli.ts"
   },
   "dependencies": {
@@ -23,6 +24,8 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@inquirer/input": "5.1.7",
+    "@inquirer/password": "5.2.3",
     "@types/express": "^5.0.3",
     "@types/express-session": "1.19.0",
     "@types/node": "^22.15.3",

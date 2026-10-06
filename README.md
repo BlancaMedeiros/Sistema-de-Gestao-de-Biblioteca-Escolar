@@ -60,6 +60,13 @@ Idempotente: pode rodar quantas vezes quiser — contas que já existem não sã
 
 Esse script recusa rodar com `NODE_ENV=production` (contas com senha fixa no código não devem existir num banco de produção).
 
+Para criar uma conta com senha escolhida por você (digitada sem aparecer na tela):
+
+```powershell
+npm run dev:funcionario:criar    # banco local
+npm run prod:funcionario:criar   # produção (Aiven) — pede confirmação; ver docs/deploy-firebase-cloud-run.md
+```
+
 ## Rodar os testes do backend
 
 ```powershell

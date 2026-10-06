@@ -58,7 +58,7 @@ Esperado na primeira vez: uma linha `✔ criado: login=... id=...` por conta. Ro
    ```json
    { "login": "bibliotecaria.teste", "senha": "Teste@123" }
    ```
-   → **Execute**. Esperado: `200`, corpo com `data.login` e `data.nome`, e um cookie `biblioteca.sid` no header `Set-Cookie` da resposta (visível na seção "Response headers" do Swagger UI).
+   → **Execute**. Esperado: `200`, corpo com `data.login` e `data.nome`, e um cookie `__session` no header `Set-Cookie` da resposta (visível na seção "Response headers" do Swagger UI).
 3. Expanda `GET /me` → **Try it out** → **Execute** (o navegador reenvia o cookie automaticamente, já que o Swagger UI está na mesma origem `localhost:3000`). Esperado: `200` com os mesmos dados do funcionário.
 4. Repita o login com uma senha errada. Esperado: `401` com `error.code = "CREDENCIAIS_INVALIDAS"`.
 5. Expanda `POST /auth/logout` → **Execute**. Esperado: `204`, sem corpo.

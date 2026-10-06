@@ -1,6 +1,6 @@
 # Deploy no Firebase Hosting + Cloud Run + MySQL (Aiven)
 
-**Estado:** a API roda no Cloud Run (`biblioteca-api`, projeto `projeto-integrador-2-6352b`) e o frontend no Firebase Hosting; o banco de produção migrou do Cloud SQL para o **Aiven for MySQL (plano gratuito)** em 05/10/2026, para eliminar o custo contínuo do Cloud SQL. A instância Cloud SQL `biblioteca-mysql` está **pausada** (`activation-policy=NEVER`) como plano B e será excluída depois que o Aiven estiver validado em produção.
+**Estado:** a API roda no Cloud Run (`biblioteca-api`, projeto `projeto-integrador-2-6352b`) e o frontend no Firebase Hosting; o banco de produção migrou do Cloud SQL para o **Aiven for MySQL (plano gratuito)** em 05/10/2026, para eliminar o custo contínuo do Cloud SQL. A instância Cloud SQL `biblioteca-mysql` e seus segredos (`biblioteca-db-password`, `biblioteca-db-root-password`) foram **excluídos** em 06/10/2026, depois de o Aiven ser validado em produção.
 
 ## Arquitetura
 
@@ -54,6 +54,23 @@ npm run prod:migrate
 
 Ele lê `.env.aiven` e `aiven-ca.pem`, conecta com TLS usando o usuário `biblioteca_app` e aplica só o que estiver pendente (idempotente).
 
+### Contas de funcionário em produção
+
+A seed com senha conhecida (`dev:seed:funcionarios`) é só para o banco local — quem tivesse a URL pública entraria com ela. Em produção, crie cada conta com:
+
+```powershell
+npm run prod:funcionario:criar
+```
+
+O comando pergunta nome e login, pede a senha duas vezes sem mostrá-la (mínimo de 8 caracteres) e exige digitar `sim` antes de gravar no Aiven. Login repetido é recusado sem alterar a conta existente. Para testar antes no banco local: `npm run dev:funcionario:criar`.
+
+### Sessão atrás do Firebase Hosting
+
+Dois detalhes que só aparecem em produção, ambos cobertos por `backend/src/modules/auth/sessao-producao.test.ts`:
+
+- O cookie de sessão se chama `__session`: o Hosting descarta das requisições repassadas ao Cloud Run qualquer outro cookie ([documentação](https://firebase.google.com/docs/hosting/manage-cache)).
+- O Express usa `trust proxy` (1 salto): o HTTPS termina no proxy do Google, e sem isso o cookie `Secure` nunca é enviado ao navegador.
+
 ## Parâmetros de produção (Cloud Run)
 
 | Parâmetro | Valor |
@@ -83,10 +100,6 @@ O último passo do workflow exige `200` em `/api/ready`. Se o banco estiver fora
 
 Os testes do frontend ainda não bloqueiam o deploy (4 falhas conhecidas de `ActivatedRoute` no `TestBed`). Depois de corrigidas, inclua `npm run test --prefix frontend -- --watch=false` no job `validar`.
 
-## Plano B: Cloud SQL pausado
-
-Enquanto não for excluída, a instância `biblioteca-mysql` continua cobrando disco e backups (não as horas de CPU). O segredo `biblioteca-db-password` pertence a ela. Para voltar a usá-la seria preciso religá-la (`--activation-policy=ALWAYS`), aplicar as migrations nela e reconfigurar o Cloud Run com `--add-cloudsql-instances` e `DB_SOCKET_PATH`.
-
 ## Limite atual
 
-Em produção existem apenas a saúde da API e a autenticação/perfil de funcionário. Não há conta de funcionário em produção: a seed com senha conhecida é só para desenvolvimento e não deve ser rodada contra o Aiven. Acervo, leitores e empréstimos ainda não existem, e o Angular ainda não consome a API.
+Em produção existem apenas a saúde da API e a autenticação/perfil de funcionário. O banco de produção começa sem nenhuma conta — crie com `npm run prod:funcionario:criar`. Acervo, leitores e empréstimos ainda não existem, e o Angular ainda não consome a API.
