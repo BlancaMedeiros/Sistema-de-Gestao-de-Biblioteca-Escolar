@@ -16,6 +16,8 @@
     "test:backend": "npm test --prefix backend",
     "dev:migrate": "npm run migrate --prefix backend",
     "prod:migrate": "npm run migrate:aiven --prefix backend",
+    "dev:funcionario:criar": "npm run funcionario:criar --prefix backend",
+    "prod:funcionario:criar": "npm run funcionario:criar --prefix backend -- --prod",
     "dev:seed:funcionarios": "npm run seed:funcionarios --prefix backend"
   },
   "packageManager": "npm@11.6.2"

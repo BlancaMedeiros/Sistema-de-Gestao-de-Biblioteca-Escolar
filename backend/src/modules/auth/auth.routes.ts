@@ -2,10 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 
 import { pool } from '../../config/database.js';
+import { NOME_COOKIE_SESSAO, opcoesCookieSessao } from '../../config/session.js';
 import { destroyOtherSessions } from '../../config/session-store.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { alterarSenha, autenticar } from './auth.service.js';
 import { findFuncionarioById, updateFuncionarioNome } from './funcionarios.repository.js';
+import { SENHA_MINIMA } from './password.js';
 
 export const authRouter = Router();
 
@@ -20,7 +22,7 @@ const atualizarPerfilSchema = z.object({
 
 const alterarSenhaSchema = z.object({
   senhaAtual: z.string().min(1),
-  novaSenha: z.string().min(8),
+  novaSenha: z.string().min(SENHA_MINIMA),
 });
 
 /**
@@ -125,7 +127,7 @@ authRouter.post('/auth/logout', requireAuth, (request, response, next) => {
       return;
     }
 
-    response.clearCookie('biblioteca.sid');
+    response.clearCookie(NOME_COOKIE_SESSAO, opcoesCookieSessao);
     response.status(204).send();
   });
 });

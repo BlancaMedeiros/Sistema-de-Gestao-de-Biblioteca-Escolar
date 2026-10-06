@@ -27,7 +27,7 @@ describe('POST /api/v1/auth/login', () => {
     expect(resposta.status).toBe(200);
     expect(resposta.body.data).toMatchObject({ login });
     expect(resposta.body.data.senha_hash).toBeUndefined();
-    expect(resposta.headers['set-cookie']?.[0]).toMatch(/biblioteca\.sid=/);
+    expect(resposta.headers['set-cookie']?.[0]).toMatch(/^__session=/);
   });
 
   test('retorna 401 para senha incorreta', async () => {

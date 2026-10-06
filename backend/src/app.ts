@@ -9,6 +9,10 @@ import { authRouter } from './modules/auth/auth.routes.js';
 export const app = express();
 
 app.disable('x-powered-by');
+// Em produção o HTTPS termina no proxy do Google e a requisição chega por HTTP
+// com X-Forwarded-Proto: https. Sem confiar nesse primeiro salto, o Express
+// considera a conexão insegura e o express-session não envia o cookie Secure.
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(sessionMiddleware);
 
