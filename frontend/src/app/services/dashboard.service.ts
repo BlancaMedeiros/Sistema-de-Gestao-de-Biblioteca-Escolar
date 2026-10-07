@@ -20,7 +20,6 @@ export class DashboardService {
     const emprestimosAtivos = emprestimos.filter(e => e.status === 'Em Andamento').length;
     const devolucoesPendentes = emprestimos.filter(e => e.status === 'Atrasado').length;
     const usuariosAtivos = usuarios.filter(u => u.status === 'Ativo').length;
-
     return of({
       totalAcervo,
       emprestimosAtivos,

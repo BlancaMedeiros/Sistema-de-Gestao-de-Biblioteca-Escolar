@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DashboardService } from '../../services/dashboard.service';
 import { Usuario } from '../../models/usuario.model';
 import { Emprestimo } from '../../models/emprestimo.model';
+import { UsuariosService } from '../../services/usuarios.service';
+import { EmprestimoService } from '../../services/emprestimo.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -34,14 +35,14 @@ export class UsuariosComponent implements OnInit {
     status: 'Ativo'
   };
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private usuarioService: UsuariosService, private emprestimoService: EmprestimoService) {}
 
   ngOnInit(): void {
     this.carregarUsuarios();
   }
 
   carregarUsuarios(): void {
-    this.dashboardService.getUsuarios().subscribe((dados) => {
+    this.usuarioService.getUsuarios().subscribe((dados) => {
       this.usuarios = dados;
       this.aplicarFiltros();
     });
@@ -62,7 +63,7 @@ export class UsuariosComponent implements OnInit {
 
   verHistorico(usuario: Usuario): void {
     this.usuarioSelecionado = usuario;
-    this.dashboardService.getEmprestimos().subscribe((emprestimos) => {
+    this.emprestimoService.getEmprestimos().subscribe((emprestimos) => {
       this.historicoUsuario = emprestimos.filter(e => e.usuarioId === usuario.id);
       this.exibirModalHistorico = true;
     });
@@ -88,6 +89,7 @@ export class UsuariosComponent implements OnInit {
       const item: Usuario = {
         id: this.usuarios.length + 1,
         nome: this.novoUsuario.nome,
+        telefone: '(11) 98765-4321',
         email: this.novoUsuario.email,
         matricula: this.novoUsuario.matricula,
         tipo: this.novoUsuario.tipo || 'Aluno',
@@ -95,7 +97,7 @@ export class UsuariosComponent implements OnInit {
         dataCadastro: this.getHojeFormatado()
       };
      
-      this.dashboardService.adicionarUsuario(item);
+      this.usuarioService.adicionarUsuario(item);
       this.carregarUsuarios();
       this.fecharModalNovo();
     }

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { UsuariosService } from '../../services/usuarios.service';
+import { LoginService } from '../../services/login.service';
 
 
 @Component({
@@ -16,17 +18,18 @@ export class PerfilComponent implements OnInit {
   novaSenha = '';
   mensagemSucesso = '';
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private usuarioService: UsuariosService, private loginService: LoginService) {}
 
-  ngOnInit(): void {
+  async ngOnInit() {
     // Busca os dados do usuário ID 8 (Bibliotecário) ou 1 (Aluno)
-    this.dashboardService.getPerfilLogado(8).subscribe(dados => {
+    const perfil = await this.loginService.getPerfilLogado()
+    perfil.subscribe(dados => {
       this.usuario = dados;
     });
   }
 
   salvarPerfil(): void {
-    this.dashboardService.atualizarPerfil(this.usuario);
+    this.usuarioService.atualizarPerfil(this.usuario);
     
     this.mensagemSucesso = 'Perfil atualizado com sucesso!';
     setTimeout(() => this.mensagemSucesso = '', 3000);

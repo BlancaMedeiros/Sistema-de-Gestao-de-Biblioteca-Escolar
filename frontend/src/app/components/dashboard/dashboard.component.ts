@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService} from '../../services/dashboard.service';
 import { MetricasDashboard } from '../../models/metricas-dashboard.model';
 import { EmprestimoRecente } from '../../models/emprestimo-recente.model';
+import { EmprestimoService } from '../../services/emprestimo.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,15 +20,15 @@ export class DashboardComponent implements OnInit {
   public ultimosEmprestimos: EmprestimoRecente[] = [];
   public carregando: boolean = true;
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private dashboardService: DashboardService, private emprestimosService: EmprestimoService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit(): void {
-    this.carregarDadosDashboard();
+  async ngOnInit() {
+    await this.carregarDadosDashboard();
   }
 
-  private carregarDadosDashboard(): void {
+  private async carregarDadosDashboard() {
     // Busca as métricas
-    this.dashboardService.getMetricas().subscribe({
+    (await this.dashboardService.getMetricas()).subscribe({
       next: (dados) => {
         this.metricas = dados;
       },
@@ -35,10 +36,12 @@ export class DashboardComponent implements OnInit {
     });
 
     // Busca a lista de empréstimos
-    this.dashboardService.getUltimosEmprestimos().subscribe({
+    this.emprestimosService.getUltimosEmprestimos().subscribe({
       next: (dados) => {
         this.ultimosEmprestimos = dados;
+        console.log('ultimos emprestimos: ', this.ultimosEmprestimos)
         this.carregando = false;
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Erro ao carregar empréstimos:', err)
     });

@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable, of } from 'rxjs';
-import { Usuario } from '../models/usuario.model';
 import { UsuariosService } from './usuarios.service';
 import { EmprestimoService } from './emprestimo.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class loginService {
-    
+export class LoginService {
+
     constructor(private usuariosService: UsuariosService, private emprestimosService: EmprestimoService){}
     // 1. Método para buscar o usuário logado (ex: pegando o ID 8 ou ID 1)
-    async getPerfilLogado(usuarioId: number = 8): Promise<any> {
+    async getPerfilLogado(usuarioId: number = 8): Promise<Observable<any>> {
         const usuarios = await firstValueFrom(this.usuariosService.getUsuarios());
         const usuario = usuarios.find(u => u.id === usuarioId);
   

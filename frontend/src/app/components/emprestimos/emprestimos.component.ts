@@ -5,6 +5,9 @@ import { DashboardService } from '../../services/dashboard.service';
 import { Emprestimo } from '../../models/emprestimo.model';
 import { Livro } from '../../models/livro.model';
 import { Usuario } from '../../models/usuario.model';
+import { EmprestimoService } from '../../services/emprestimo.service';
+import { UsuariosService } from '../../services/usuarios.service';
+import { AcervoService } from '../../services/acervo.service';
 
 @Component({
   selector: 'app-emprestimos',
@@ -32,27 +35,27 @@ export class EmprestimosComponent implements OnInit {
     devolucaoPrevista: this.getDataFuturaFormatada(7)
   };
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private emprestimoService: EmprestimoService, private usuariosService: UsuariosService, private acervoService: AcervoService) {}
 
   ngOnInit(): void {
     this.carregarDados();
   }
 
   carregarDados(): void {
-    this.dashboardService.getEmprestimos().subscribe((dados) => {
+    this.emprestimoService.getEmprestimos().subscribe((dados) => {
       this.emprestimos = dados;
       this.aplicarFiltros();
     });
 
     this.carregarLivros();
 
-    this.dashboardService.getUsuarios().subscribe((usuarios) => {
+    this.usuariosService.getUsuarios().subscribe((usuarios) => {
       this.usuariosAtivos = usuarios.filter(u => u.status === 'Ativo');
     });
   }
 
   carregarLivros(): void {
-    this.dashboardService.getAcervo().subscribe((livros) => {
+    this.acervoService.getAcervo().subscribe((livros) => {
       this.todosLivros = livros;
       this.livrosDisponiveis = livros.filter(l => l.quantidadeDisponivel > 0);
     });
@@ -97,7 +100,7 @@ export class EmprestimosComponent implements OnInit {
       emprestimo.status = 'Devolvido';
       emprestimo.devolucaoReal = this.getHojeFormatado();
       
-      this.dashboardService.incrementarEstoque(emprestimo.livroId);
+      this.acervoService.incrementarEstoque(emprestimo.livroId);
       this.carregarLivros();
       this.aplicarFiltros();
     }
@@ -130,7 +133,7 @@ export class EmprestimosComponent implements OnInit {
 
       this.emprestimos.unshift(item);
       
-      this.dashboardService.decrementarEstoque(livro.id);
+      this.acervoService.decrementarEstoque(livro.id);
       this.carregarLivros();
 
       this.aplicarFiltros();

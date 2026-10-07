@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DashboardService } from '../../services/dashboard.service';
 import { Livro } from '../../models/livro.model';
+import { AcervoService } from '../../services/acervo.service';
 
 @Component({
   selector: 'app-acervo',
@@ -33,14 +33,14 @@ export class AcervoComponent implements OnInit {
     prateleira: ''
   };
 
-  constructor(private dashboardService: DashboardService) {}
+  constructor(private acervoService: AcervoService) {}
 
   ngOnInit(): void {
     this.carregarAcervo();
   }
 
   carregarAcervo(): void {
-    this.dashboardService.getAcervo().subscribe((dados) => {
+    this.acervoService.getAcervo().subscribe((dados) => {
       this.livros = dados;
       this.aplicarFiltros();
     });
