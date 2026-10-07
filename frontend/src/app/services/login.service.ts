@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable, of } from 'rxjs';
 import { UsuariosService } from './usuarios.service';
 import { EmprestimoService } from './emprestimo.service';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/enviroment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
 
-    constructor(private usuariosService: UsuariosService, private emprestimosService: EmprestimoService){}
+    constructor(private http: HttpClient,private usuariosService: UsuariosService, private emprestimosService: EmprestimoService){}
     // 1. Método para buscar o usuário logado (ex: pegando o ID 8 ou ID 1)
     async getPerfilLogado(usuarioId: number = 8): Promise<Observable<any>> {
         const usuarios = await firstValueFrom(this.usuariosService.getUsuarios());
@@ -29,6 +31,14 @@ export class LoginService {
             ...usuario,
             emprestimosAtivos,
             historicoTotal
+        });
+    }
+
+
+    EfetuarLogin(username: string, password: string){
+        return this.http.post(`${environment.apiUrl}/auth/login`,{
+            login: username,
+            senha: password
         });
     }
 }

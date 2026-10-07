@@ -39,7 +39,6 @@ export class DashboardComponent implements OnInit {
     this.emprestimosService.getUltimosEmprestimos().subscribe({
       next: (dados) => {
         this.ultimosEmprestimos = dados;
-        console.log('ultimos emprestimos: ', this.ultimosEmprestimos)
         this.carregando = false;
         this.cdr.detectChanges();
       },

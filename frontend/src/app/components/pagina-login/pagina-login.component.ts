@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-pagina-login',
@@ -19,6 +20,7 @@ export class PaginaLoginComponent {
   };
 
   private router = inject(Router);
+  constructor(private loginService: LoginService){}
 
   public onLogin(): void {
     // 1. Confere se os campos foram preenchidos
@@ -26,15 +28,17 @@ export class PaginaLoginComponent {
       alert('Por favor, preencha o usuário e a senha.');
       return;
     }
+    this.loginService.EfetuarLogin(this.usuario.username, this.usuario.password).subscribe(resultado=>{
+      // 2. Simula o login com sucesso sem precisar de serviço/API
+      console.log(resultado)
+      alert('Login realizado com sucesso!');
+      
+      // Guardamos uma confirmação temporária no navegador
+      localStorage.setItem('usuario_logado', 'true');
 
-    // 2. Simula o login com sucesso sem precisar de serviço/API
-    alert('Login realizado com sucesso!');
-    
-    // Guardamos uma confirmação temporária no navegador
-    localStorage.setItem('usuario_logado', 'true');
-
-    // Manda para a rota do dashboard
-    this.router.navigate(['/dashboard']);
+      // Manda para a rota do dashboard
+      this.router.navigate(['/dashboard']);
+    });
   }
 
   // Se clicar no 'X', fecha o modal voltando para o dashboard
