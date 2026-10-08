@@ -3,7 +3,7 @@ import { firstValueFrom, Observable, of } from 'rxjs';
 import { UsuariosService } from './usuarios.service';
 import { EmprestimoService } from './emprestimo.service';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/enviroment';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

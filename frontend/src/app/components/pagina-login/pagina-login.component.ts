@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LoginService } from '../../services/login.service';
@@ -19,6 +20,10 @@ export class PaginaLoginComponent {
     password: ''
   };
 
+  // Signal porque a aplicação é zoneless: a resposta HTTP chega fora de um
+  // evento do template e, sem signal, a mensagem não apareceria na tela.
+  public mensagemErro = signal<string | null>(null);
+
   private router = inject(Router);
   constructor(private loginService: LoginService){}
 
@@ -28,16 +33,24 @@ export class PaginaLoginComponent {
       alert('Por favor, preencha o usuário e a senha.');
       return;
     }
-    this.loginService.EfetuarLogin(this.usuario.username, this.usuario.password).subscribe(resultado=>{
-      // 2. Simula o login com sucesso sem precisar de serviço/API
-      console.log(resultado)
-      alert('Login realizado com sucesso!');
-      
-      // Guardamos uma confirmação temporária no navegador
-      localStorage.setItem('usuario_logado', 'true');
 
-      // Manda para a rota do dashboard
-      this.router.navigate(['/dashboard']);
+    // 2. Autentica na API; o backend devolve o cookie de sessão
+    this.loginService.EfetuarLogin(this.usuario.username, this.usuario.password).subscribe({
+      next: () => {
+        alert('Login realizado com sucesso!');
+
+        // Guardamos uma confirmação temporária no navegador
+        localStorage.setItem('usuario_logado', 'true');
+
+        // Manda para a rota do dashboard
+        this.router.navigate(['/dashboard']);
+      },
+      error: (erro: HttpErrorResponse) => {
+        // A API responde { error: { message } }; sem corpo, o servidor não respondeu
+        this.mensagemErro.set(
+          erro.error?.error?.message ?? 'Não foi possível conectar ao servidor. Tente novamente.',
+        );
+      },
     });
   }
 

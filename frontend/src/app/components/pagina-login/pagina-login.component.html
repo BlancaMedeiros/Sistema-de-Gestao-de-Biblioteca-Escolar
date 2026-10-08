@@ -32,6 +32,9 @@
       <button type="submit">Entrar</button>
     </form>
 
+    <!-- Mensagem de erro do login -->
+    <p class="mensagem-erro" role="alert" *ngIf="mensagemErro()">{{ mensagemErro() }}</p>
+
     <p class="texto-instrucao">
       Entre com suas credenciais para acessar o sistema.
     </p>
