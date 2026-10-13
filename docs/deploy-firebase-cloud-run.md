@@ -42,7 +42,7 @@ Ambos estão ignorados pelo Git. As senhas não devem ser incluídas na document
 
 ### Migrations em produção
 
-O backend HTTP não aplica migrations na inicialização. O workflow foi ajustado para executar o **CLI existente** (`npm run migrate --prefix backend`) antes de atualizar o Cloud Run. O usuário autorizou a publicação em `feat/backend-foundation` e a permissão de leitura dos dois segredos para a conta do deploy; os acessos foram concedidos e a publicação está em andamento. Veja as [evidências da validação](validacao-cicd-tidb.md).
+O backend HTTP não aplica migrations na inicialização. O workflow executa o **CLI existente** (`npm run migrate --prefix backend`) antes de atualizar o Cloud Run. A publicação em `feat/backend-foundation` e os dois acessos aos segredos foram autorizados pelo usuário e executados. O [Actions 38486900414](https://github.com/BlancaMedeiros/Sistema-de-Gestao-de-Biblioteca-Escolar/actions/runs/38486900414) concluiu com sucesso em 13/10/2026, incluindo Secret Manager, migrations, API, Hosting e verificações públicas. Veja as [evidências da validação](validacao-cicd-tidb.md).
 
 O CLI compara os arquivos `.sql` de `database/migrations/` com `schema_migrations`, executa apenas os ausentes em ordem de nome e registra cada arquivo depois de seu SQL concluir. Em falha, retorna código 1 e interrompe as migrations seguintes. No workflow, isso impede tanto o deploy da API quanto a publicação do Hosting. Não há seed de funcionários no deploy.
 
@@ -84,7 +84,9 @@ Esses comportamentos têm cobertura em `backend/src/modules/auth/sessao-producao
 
 A conta de serviço `biblioteca-api@projeto-integrador-2-6352b.iam.gserviceaccount.com` precisa de `roles/secretmanager.secretAccessor` nos segredos usados pela API. Não é necessário usar chave JSON em `GOOGLE_APPLICATION_CREDENTIALS`.
 
-A troca manteve a mesma imagem da API. A revisão com TiDB é `biblioteca-api-00015-jvx`. A publicação do Hosting `181886835cddc20c` usa a tag `fh-181886835cddc20c`, vinculada a essa revisão. Os seis arquivos do frontend foram preservados integralmente.
+Na troca de banco, a imagem da API foi preservada: revisão `biblioteca-api-00015-jvx`, publicação do Hosting `181886835cddc20c` e tag `fh-181886835cddc20c`. Os seis arquivos do frontend foram preservados nessa troca.
+
+Depois da ativação das migrations no CI/CD, a revisão em produção é `biblioteca-api-00016-5c4`, imagem do commit `9c24317591c50b164518da244aa81d9372a56a74`, com a tag do Hosting `fh-4a86d43b65d865e6` apontando para essa revisão. A configuração TiDB, as referências de segredos e o limite de duas instâncias foram conferidos novamente após o deploy.
 
 ## CI/CD
 
