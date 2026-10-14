@@ -87,6 +87,14 @@ button[type="submit"]:hover {
   background: #0d3847;
 }
 
+/* Mensagem de erro do login */
+.mensagem-erro {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 12px 0 0;
+}
+
 .texto-instrucao {
   color: #777;
   font-size: 0.85rem;
