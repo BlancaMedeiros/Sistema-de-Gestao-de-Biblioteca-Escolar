@@ -1,7 +1,7 @@
 {
   "/api": {
-    "target": "http://backend:3000",
-    "secure": false,
+    "target": "https://projeto-integrador-2-6352b.web.app",
+    "secure": true,
     "changeOrigin": true
   }
 }

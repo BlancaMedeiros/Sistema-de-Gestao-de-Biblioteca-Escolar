@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UsuariosService } from '../../services/usuarios.service';
 import { LoginService } from '../../services/login.service';
+import { firstValueFrom } from 'rxjs';
 
 
 @Component({
@@ -22,10 +23,7 @@ export class PerfilComponent implements OnInit {
 
   async ngOnInit() {
     // Busca os dados do usuário ID 8 (Bibliotecário) ou 1 (Aluno)
-    const perfil = await this.loginService.getPerfilLogado()
-    perfil.subscribe(dados => {
-      this.usuario = dados;
-    });
+    this.usuario = await firstValueFrom(await this.loginService.getPerfilLogado())
   }
 
   salvarPerfil(): void {
