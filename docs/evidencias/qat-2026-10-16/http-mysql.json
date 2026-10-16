@@ -1,0 +1,962 @@
+{
+  "inicio": "2026-10-16T13:10:47.128Z",
+  "metodo": "HTTP real automatizado, processo próprio",
+  "banco": {
+    "host": "127.0.0.1",
+    "porta": "3306",
+    "nome": "biblioteca",
+    "versao": "8.4.11"
+  },
+  "casos": [
+    {
+      "id": "API-01",
+      "descricao": "login válido, inválido e incompleto",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-03",
+      "descricao": "perfil da sessão sem dados privados",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-04",
+      "descricao": "perfil parcial e limites do nome",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-05",
+      "descricao": "troca de senha e invalidação de outra sessão",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-06",
+      "descricao": "funcionário, duplicidade e login da nova conta",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-07",
+      "descricao": "cadastro de livro e validação",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-08",
+      "descricao": "busca literal e sem acento",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-09",
+      "descricao": "livro persistido e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-10",
+      "descricao": "edição parcial e saldo sem gravação inválida",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-12",
+      "descricao": "leitor, matrícula única e campos inválidos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-13",
+      "descricao": "listagem de leitores com filtros e paginação",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-14",
+      "descricao": "consulta de leitor e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-15",
+      "descricao": "PATCH de leitor preserva omitidos e limpa opcional",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-17",
+      "descricao": "empréstimo com datas e operador do servidor",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-16",
+      "descricao": "histórico do leitor com resumo independente de filtro",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-18",
+      "descricao": "filtros combinados de empréstimos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-19",
+      "descricao": "consulta de empréstimo e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-22",
+      "descricao": "dashboard conciliado antes/depois",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-23",
+      "descricao": "pendências e rejeição de filtro Devolvido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-05a",
+      "descricao": "bloqueio de inativação com empréstimo aberto",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-20",
+      "descricao": "duas renovações e rejeição da terceira",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-06",
+      "descricao": "idempotência de cadastro, corpo divergente e header obrigatório",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-09",
+      "descricao": "reinício real preserva sessão, registros e idempotência",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-21",
+      "descricao": "devolução, repetição e recomposição do saldo",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-01",
+      "descricao": "limite de três e liberação após devolver",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-03",
+      "descricao": "atraso bloqueia emprestar/renovar até devolver",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-07",
+      "descricao": "HTTP concorrente disputa a última unidade",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-12",
+      "descricao": "paginação estável, busca literal e filtros inválidos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-11",
+      "descricao": "inativação após devolução preserva histórico",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-14",
+      "descricao": "400, 413 e 415 por HTTP real",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-02",
+      "descricao": "logout invalida a sessão usada",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-13",
+      "descricao": "áreas protegidas rejeitam cliente sem sessão",
+      "resultado": "aprovado"
+    }
+  ],
+  "requisicoes": [
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 401,
+      "erro": "CREDENCIAIS_INVALIDAS"
+    },
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-03",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-04",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 401,
+      "erro": "SENHA_ATUAL_INVALIDA"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 204
+    },
+    {
+      "caso": "API-05",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 401,
+      "erro": "CREDENCIAIS_INVALIDAS"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-05",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 201,
+      "id": 650
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 409,
+      "erro": "LOGIN_DUPLICADO"
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 650
+    },
+    {
+      "caso": "API-06",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 200
+    },
+    {
+      "caso": "API-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 201,
+      "id": 249
+    },
+    {
+      "caso": "API-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-08",
+      "metodo": "GET",
+      "caminho": "/livros?busca=qat-9eacc878-cd9e-4316-8298-481631a2d09b%20memorias%20%25_!",
+      "status": 200
+    },
+    {
+      "caso": "API-09",
+      "metodo": "GET",
+      "caminho": "/livros/249",
+      "status": 200,
+      "id": 249
+    },
+    {
+      "caso": "API-09",
+      "metodo": "GET",
+      "caminho": "/livros/0",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/249",
+      "status": 200,
+      "id": 249
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/249",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/249",
+      "status": 200,
+      "id": 249
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 201,
+      "id": 124
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 409,
+      "erro": "MATRICULA_DUPLICADA"
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-13",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-9eacc878-cd9e-4316-8298-481631a2d09b&tipo=Aluno&status=Ativo&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-14",
+      "metodo": "GET",
+      "caminho": "/usuarios/124",
+      "status": 200,
+      "id": 124
+    },
+    {
+      "caso": "API-14",
+      "metodo": "GET",
+      "caminho": "/usuarios/0",
+      "status": 404,
+      "erro": "USUARIO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-15",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/124",
+      "status": 200,
+      "id": 124
+    },
+    {
+      "caso": "API-15",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/124",
+      "status": 200,
+      "id": 124
+    },
+    {
+      "caso": "API-17",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 101
+    },
+    {
+      "caso": "API-17",
+      "metodo": "GET",
+      "caminho": "/livros/249",
+      "status": 200,
+      "id": 249
+    },
+    {
+      "caso": "API-16",
+      "metodo": "GET",
+      "caminho": "/usuarios/124/emprestimos?status=Devolvido",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 0
+      }
+    },
+    {
+      "caso": "API-18",
+      "metodo": "GET",
+      "caminho": "/emprestimos?usuarioId=124&livroId=249&status=Abertos&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-19",
+      "metodo": "GET",
+      "caminho": "/emprestimos/101",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-19",
+      "metodo": "GET",
+      "caminho": "/emprestimos/0",
+      "status": 404,
+      "erro": "EMPRESTIMO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-22",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 200
+    },
+    {
+      "caso": "API-23",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?usuarioId=124",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-23",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?status=Devolvido",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-05a",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/124",
+      "status": 409,
+      "erro": "USUARIO_COM_EMPRESTIMOS"
+    },
+    {
+      "caso": "REG-05a",
+      "metodo": "DELETE",
+      "caminho": "/livros/249",
+      "status": 409,
+      "erro": "LIVRO_COM_EMPRESTIMOS"
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/renovacoes",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/renovacoes",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/renovacoes",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/renovacoes",
+      "status": 409,
+      "erro": "LIMITE_RENOVACOES"
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 101
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "CHAVE_IDEMPOTENCIA_REUTILIZADA"
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 649
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "GET",
+      "caminho": "/emprestimos/101",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 101
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/renovacoes",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/devolucao",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/devolucao",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/101/devolucao",
+      "status": 409,
+      "erro": "EMPRESTIMO_DEVOLVIDO"
+    },
+    {
+      "caso": "API-21",
+      "metodo": "GET",
+      "caminho": "/livros/249",
+      "status": 200,
+      "id": 249
+    },
+    {
+      "caso": "API-21",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?usuarioId=124",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 0
+      }
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 102
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 103
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 104
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIMITE_EMPRESTIMOS"
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/102/devolucao",
+      "status": 200,
+      "id": 102
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 105
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/103/devolucao",
+      "status": 200,
+      "id": 103
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/104/devolucao",
+      "status": 200,
+      "id": 104
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/105/devolucao",
+      "status": 200,
+      "id": 105
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 106
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 107
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "GET",
+      "caminho": "/emprestimos/106",
+      "status": 200,
+      "id": 106
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "USUARIO_COM_ATRASOS"
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/107/renovacoes",
+      "status": 409,
+      "erro": "USUARIO_COM_ATRASOS"
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/106/devolucao",
+      "status": 200,
+      "id": 106
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/107/renovacoes",
+      "status": 200,
+      "id": 107
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/107/devolucao",
+      "status": 200,
+      "id": 107
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 201,
+      "id": 250
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 201,
+      "id": 126
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 108
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIVRO_INDISPONIVEL"
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "GET",
+      "caminho": "/livros/250",
+      "status": 200,
+      "id": 250
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos/108/devolucao",
+      "status": 200,
+      "id": 108
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-9eacc878-cd9e-4316-8298-481631a2d09b&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 2
+      }
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-9eacc878-cd9e-4316-8298-481631a2d09b&pageSize=1&page=2",
+      "status": 200,
+      "pagination": {
+        "page": 2,
+        "pageSize": 1,
+        "total": 2
+      }
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?page=1&page=2",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/emprestimos?vencimentoDe=2026-02-30",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "DELETE",
+      "caminho": "/livros/249",
+      "status": 204
+    },
+    {
+      "caso": "API-11",
+      "metodo": "GET",
+      "caminho": "/livros/249",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "DELETE",
+      "caminho": "/livros/249",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "GET",
+      "caminho": "/emprestimos/101",
+      "status": 200,
+      "id": 101
+    },
+    {
+      "caso": "API-11",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/124",
+      "status": 200,
+      "id": 124
+    },
+    {
+      "caso": "API-11",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 409,
+      "erro": "MATRICULA_DUPLICADA"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/124",
+      "status": 200,
+      "id": 124
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 400,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 413,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 415,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "API-02",
+      "metodo": "POST",
+      "caminho": "/auth/logout",
+      "status": 204
+    },
+    {
+      "caso": "API-02",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/livros",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/usuarios",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/emprestimos",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    }
+  ],
+  "resultado": "aprovado",
+  "limpeza": "fixtures próprias removidas",
+  "fim": "2026-10-16T13:10:51.212Z"
+}

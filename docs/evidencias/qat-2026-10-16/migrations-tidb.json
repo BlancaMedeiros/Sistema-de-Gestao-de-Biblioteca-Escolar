@@ -1,0 +1,16 @@
+{
+  "data": "2026-10-16T13:21:07.776Z",
+  "banco": "8.0.11-TiDB-v8.5.3",
+  "origem": "TiDB local descartavel iniciado vazio nesta rodada; 0001-0007 aplicadas pelo preparador e conferidas apos QAT",
+  "migrations": [
+    "0001_create_funcionarios.sql",
+    "0002_create_sessoes.sql",
+    "0003_create_livros.sql",
+    "0004_create_usuarios.sql",
+    "0005_create_emprestimos.sql",
+    "0006_create_renovacoes.sql",
+    "0007_create_idempotencia.sql"
+  ],
+  "pendentes": [],
+  "checks": "ON"
+}

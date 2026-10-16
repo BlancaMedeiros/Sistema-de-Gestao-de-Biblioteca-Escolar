@@ -1,7 +1,9 @@
 # Fatia de livros (acervo) — especificação
 
-**Situação:** proposta para revisão, 08/10/2026. Nada desta fatia foi implementado ainda.
-**Branch:** `feature/livros`, com PR para `feat/backend-foundation`. O deploy acontece no merge.
+**Situação:** API implementada e testada localmente em 15/10/2026, a partir desta especificação de 08/10. Resultados e instruções no [QAT](../qat-e-proximos-passos.md). A tela de acervo ainda usa mocks; esta fatia não foi publicada em produção.
+**Branch:** `feature/livros`, atualizada com `origin/feat/backend-foundation` em `888e4dd`. Destino previsto da integração: `feat/backend-foundation`; ainda sem PR desta implementação.
+
+**Evolução em 15/10:** este documento preserva a especificação da fatia inicial sem empréstimos. O [contrato completo atual](2026-10-15-apis-restantes-design.md) agora inclui empréstimos abertos no saldo, status `Esgotado` e conflito 409 ao inativar livro emprestado. A implementação e os testes foram ampliados conforme esse contrato; as limitações históricas abaixo sobre ausência de empréstimos não descrevem mais a API atual.
 
 ## Objetivo
 
@@ -40,7 +42,7 @@ status = "Disponível"     se disponível > 0
 
 Sem empréstimos, `disponível = 0` só acontece quando todos os exemplares estão em manutenção, então nesta fatia "Esgotado" não ocorre. Ele entra com a fatia de empréstimos, junto com a contagem que o produz.
 
-Invariante: `0 ≤ em manutenção ≤ total` e `total ≥ 1`. A API valida e devolve 422 com o campo culpado. O banco também tem um `CHECK`, como segunda barreira.
+Invariante: `0 ≤ em manutenção ≤ total` e `total ≥ 1`. A API valida e devolve 422 com o campo culpado. O MySQL local também tem um `CHECK`, como segunda barreira. No TiDB, a aplicação da constraint depende de `tidb_enable_check_constraint = ON`; os testes em TiDB local usaram essa configuração. Confirmar a configuração do TiDB Cloud antes da publicação; ela não foi alterada nesta entrega ([documentação](https://docs.pingcap.com/tidb/stable/constraints/#check)).
 
 ## Banco de dados
 
@@ -68,8 +70,9 @@ CREATE TABLE livros (
 ```
 
 - `UNIQUE (isbn)` aceita vários `NULL`, então livros sem ISBN não conflitam entre si.
-- A collation `utf8mb4_0900_ai_ci` fica explícita para a busca ignorar maiúsculas e acentos igual no MySQL local e no Aiven: "memorias" encontra "Memórias".
+- A collation `utf8mb4_0900_ai_ci` fica explícita para a busca ignorar maiúsculas e acentos no MySQL local e no TiDB: "memorias" encontra "Memórias". A busca foi testada nos dois bancos locais.
 - O ISBN é gravado normalizado: só dígitos e `X` maiúsculo, sem hífens nem espaços.
+- A validação verifica formato ISBN-10/13, sem cálculo do dígito de controle.
 
 ## API
 
@@ -110,6 +113,7 @@ Todas as rotas ficam sob `/api/v1` e exigem sessão (`requireAuth` aplicado no r
 - **Cadastro (`POST`):** obrigatórios `titulo`, `autor` e `quantidadeTotal` (inteiro ≥ 1). `quantidadeManutencao` vale 0 por padrão. O ano, se informado, é um inteiro entre 1000 e o ano seguinte ao atual.
 - **Texto:** todo campo de texto perde os espaços das pontas e respeita o tamanho da coluna. Título e autor não podem ficar vazios. Nos campos opcionais, texto vazio vira `null`.
 - **Edição (`PATCH`):** é parcial, ou seja, só muda os campos enviados. Enviar `null` num campo opcional apaga o valor. Corpo sem nenhum campo conhecido devolve 422. A invariante de quantidade é validada sobre o resultado final, juntando o valor enviado com o já gravado.
+- **Concorrência na edição:** leitura com `FOR UPDATE` e escrita na mesma transação, preservando campos omitidos e as quantidades finais também entre PATCHes simultâneos.
 - **Exclusão (`DELETE`):** marca `ativo = 0`. O livro some da listagem e de `GET /livros/:id`, mas a linha continua no banco. Excluir um livro já inativo devolve 404.
 - **IDs:** um `:id` que não seja inteiro positivo devolve 404, como um livro inexistente.
 

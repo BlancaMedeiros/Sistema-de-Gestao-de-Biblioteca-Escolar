@@ -2,7 +2,11 @@
 
 Monorepo do Projeto Integrador II, com frontend Angular, backend Express + TypeScript e banco MySQL.
 
-> A fundação da stack local está disponível, com a primeira fatia de negócio implementada: autenticação de funcionário (login/logout/`/me`) e Swagger incremental. Acervo, leitores e empréstimos ainda serão adicionados nas próximas etapas.
+> As APIs de autenticação/perfil, funcionários, livros, leitores, empréstimos, dashboard e pendências estão implementadas e testadas localmente em 15/10/2026. As novas APIs ainda não foram publicadas nem integradas às telas. Veja o [QAT](docs/qat-e-proximos-passos.md) e o [contrato completo](docs/specs/2026-10-15-apis-restantes-design.md) para testar pelo Swagger e consultar as evidências.
+
+Para homologar as APIs antes de entregar à Bianca, use o [checklist de aceite do backend](docs/qat-aceite-backend.md): versão testada, 23 operações, regras de negócio, evidências, defeitos e material de integração.
+
+**QAT de 16/10 concluído:** 214 testes passaram em cada banco local (MySQL/TiDB), e as 23 operações passaram pelo QAT HTTP com reinício real da API. Veja o [resultado e correções](docs/qat-resultado-2026-10-16.md) e o [guia de integração para Bianca](docs/entrega-backend-bianca.md). Aprovação para integração local; publicação e aceite das telas permanecem etapas separadas.
 
 ## Pré-requisitos
 
