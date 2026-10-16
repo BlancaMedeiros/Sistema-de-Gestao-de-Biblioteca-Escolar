@@ -34,6 +34,7 @@ if (process.argv.includes('--servidor')) {
   const usuarios = new Set();
   const emprestimos = new Set();
   const sessao = {};
+  const sessaoAuxiliar = {};
   const casos = [];
   const requisicoes = [];
   let servidor;
@@ -157,6 +158,28 @@ if (process.argv.includes('--servidor')) {
     chamar(`/emprestimos/${id}/${nome}`, 'POST', {}, chave);
   const emprestar = (livroId, usuarioId, chave = randomUUID()) =>
     chamar('/emprestimos', 'POST', { livroId, usuarioId }, chave);
+  function verificarPerfil(perfil) {
+    assert.deepEqual(Object.keys(perfil).sort(), [
+      'cargo',
+      'email',
+      'emprestimosAtivos',
+      'historicoTotal',
+      'id',
+      'login',
+      'matricula',
+      'nome',
+      'telefone',
+      'usuarioId',
+    ]);
+    assert.equal(perfil.cargo, 'Funcionário autorizado');
+  }
+  function verificarLocalizacao(dados) {
+    assert.equal(dados.livro, dados.livroTitulo);
+    assert.equal(dados.usuario, dados.usuarioNome);
+    assert.equal(dados.livroEstante, 'QAT-E1');
+    assert.equal(dados.livroPrateleira, 'P2');
+    assert.equal(dados.livroLocalizacao, 'QAT-E1 - P2');
+  }
 
   try {
     // Não usa uma API já existente na porta: somente o processo criado pelo QAT.
@@ -190,8 +213,12 @@ if (process.argv.includes('--servidor')) {
     });
     await caso('API-03', 'perfil da sessão sem dados privados', async () => {
       const r = await esperar('/me', 'GET', undefined, 200);
-      assert.deepEqual(Object.keys(r.body.data).sort(), ['id', 'login', 'nome']);
+      verificarPerfil(r.body.data);
       assert.equal(r.body.data.id, operadora.id);
+      assert.equal(r.body.data.usuarioId, null);
+      assert.equal(r.body.data.matricula, null);
+      assert.equal(r.body.data.emprestimosAtivos, 0);
+      assert.equal(r.body.data.historicoTotal, 0);
     });
     await caso('API-04', 'perfil parcial e limites do nome', async () => {
       await esperar('/me', 'PATCH', { nome: 'x'.repeat(121) }, 422, 'DADOS_INVALIDOS');
@@ -254,9 +281,15 @@ if (process.argv.includes('--servidor')) {
       await esperar('/me', 'GET', undefined, 200);
     });
     await caso('API-06', 'funcionário, duplicidade e login da nova conta', async () => {
-      const dados = { nome: 'Auxiliar QAT', login: `${prefixo}-2`, senha };
+      const dados = {
+        nome: 'Auxiliar QAT',
+        login: `${prefixo}-2`,
+        senha,
+        email: 'auxiliar@example.test',
+      };
       const r = await esperar('/funcionarios', 'POST', dados, 201);
-      assert.deepEqual(Object.keys(r.body.data).sort(), ['id', 'login', 'nome']);
+      verificarPerfil(r.body.data);
+      assert.equal(r.body.data.email, dados.email);
       await esperar('/funcionarios', 'POST', dados, 409, 'LOGIN_DUPLICADO');
       await esperar(
         '/funcionarios',
@@ -272,9 +305,44 @@ if (process.argv.includes('--servidor')) {
         200,
         undefined,
         undefined,
-        {},
+        sessaoAuxiliar,
       );
     });
+    await caso(
+      'COMPAT-01',
+      'contatos do perfil persistem e campos calculados são protegidos',
+      async () => {
+        const r = await esperar(
+          '/me',
+          'PATCH',
+          {
+            email: '  perfil@example.test  ',
+            telefone: '  (11) 90000-0000  ',
+            cargo: 'ADMIN',
+            historicoTotal: 999,
+            matricula: 'forjada',
+          },
+          200,
+        );
+        assert.equal(r.body.data.email, 'perfil@example.test');
+        assert.equal(r.body.data.telefone, '(11) 90000-0000');
+        assert.equal(r.body.data.matricula, null);
+        assert.equal(r.body.data.historicoTotal, 0);
+        verificarPerfil(r.body.data);
+        assert.deepEqual((await chamar('/me')).body, r.body);
+        await esperar('/me', 'PATCH', { email: 'invalido' }, 422, 'DADOS_INVALIDOS');
+        await esperar('/me', 'PATCH', { telefone: 'x'.repeat(31) }, 422, 'DADOS_INVALIDOS');
+        await esperar('/me', 'PATCH', { novaSenha: senha }, 422, 'DADOS_INVALIDOS');
+        await esperar(
+          '/me',
+          'PATCH',
+          { usuarioId: 4294967295, email: 'recusar@example.test' },
+          404,
+          'USUARIO_NAO_ENCONTRADO',
+        );
+        assert.equal((await chamar('/me')).body.data.email, 'perfil@example.test');
+      },
+    );
     metricas = (await chamar('/dashboard')).body.data.metricas;
     await caso('API-07', 'cadastro de livro e validação', async () => {
       livro = await novoLivro();
@@ -347,6 +415,30 @@ if (process.argv.includes('--servidor')) {
       assert.equal(r.body.data.turma, null);
       assert.equal(r.body.data.matricula, usuario.matricula);
     });
+    await caso(
+      'COMPAT-02',
+      'vínculo explícito e exclusivo fornece matrícula sem misturar contatos',
+      async () => {
+        const r = await esperar('/me', 'PATCH', { usuarioId: usuario.id }, 200);
+        assert.equal(r.body.data.matricula, usuario.matricula);
+        assert.equal(r.body.data.emprestimosAtivos, 0);
+        await esperar(
+          '/me',
+          'PATCH',
+          { usuarioId: usuario.id, telefone: 'nao-salvar' },
+          409,
+          'LEITOR_JA_VINCULADO',
+          undefined,
+          sessaoAuxiliar,
+        );
+        const auxiliar = (await chamar('/me', 'GET', undefined, undefined, sessaoAuxiliar)).body
+          .data;
+        assert.equal(auxiliar.usuarioId, null);
+        assert.equal(auxiliar.telefone, null);
+        assert.equal((await chamar(`/usuarios/${usuario.id}`)).body.data.email, null);
+        await esperar(`/livros/${livro.id}`, 'PATCH', { estante: 'QAT-E1', prateleira: 'P2' }, 200);
+      },
+    );
     await caso('API-17', 'empréstimo com datas e operador do servidor', async () => {
       criacao = await esperar(
         '/emprestimos',
@@ -365,6 +457,10 @@ if (process.argv.includes('--servidor')) {
       assert.equal(emprestimo.dataEmprestimo, hojeEscola());
       assert.equal(emprestimo.devolucaoPrevista, somarDias(hojeEscola(), 7));
       assert.equal(emprestimo.funcionarioId, operadora.id);
+      verificarLocalizacao(emprestimo);
+      const perfil = (await chamar('/me')).body.data;
+      assert.equal(perfil.emprestimosAtivos, 1);
+      assert.equal(perfil.historicoTotal, 1);
       assert.equal((await chamar(`/livros/${livro.id}`)).body.data.quantidadeDisponivel, 4);
     });
     await caso('API-16', 'histórico do leitor com resumo independente de filtro', async () => {
@@ -468,7 +564,13 @@ if (process.argv.includes('--servidor')) {
     await caso('REG-09', 'reinício real preserva sessão, registros e idempotência', async () => {
       await parar();
       await iniciar();
-      await esperar('/me', 'GET', undefined, 200);
+      const perfil = (await esperar('/me', 'GET', undefined, 200)).body.data;
+      assert.equal(perfil.email, 'perfil@example.test');
+      assert.equal(perfil.telefone, '(11) 90000-0000');
+      assert.equal(perfil.usuarioId, usuario.id);
+      assert.equal(perfil.matricula, usuario.matricula);
+      assert.equal(perfil.emprestimosAtivos, 1);
+      assert.equal(perfil.historicoTotal, 1);
       assert.equal(
         (await chamar(`/emprestimos/${emprestimo.id}`)).body.data.quantidadeRenovacoes,
         2,
@@ -498,6 +600,16 @@ if (process.argv.includes('--servidor')) {
         0,
       );
     });
+    await caso(
+      'COMPAT-03',
+      'devolução atualiza os indicadores pessoais mantendo o histórico',
+      async () => {
+        const perfil = (await chamar('/me')).body.data;
+        assert.equal(perfil.emprestimosAtivos, 0);
+        assert.equal(perfil.historicoTotal, 1);
+        verificarLocalizacao((await chamar(`/emprestimos/${emprestimo.id}`)).body.data);
+      },
+    );
     await caso('REG-01', 'limite de três e liberação após devolver', async () => {
       const ids = [];
       for (let i = 0; i < 3; i++) {
@@ -566,6 +678,25 @@ if (process.argv.includes('--servidor')) {
       );
       await esperar(`/usuarios/${usuario.id}`, 'PATCH', { status: 'Ativo' }, 200);
     });
+    await caso(
+      'COMPAT-04',
+      'localização e nomes sobrevivem à inativação em consultas e histórico',
+      async () => {
+        verificarLocalizacao((await chamar(`/emprestimos/${emprestimo.id}`)).body.data);
+        const lista = await chamar(`/emprestimos?livroId=${livro.id}`);
+        for (const item of lista.body.data) verificarLocalizacao(item);
+        const historico = await chamar(`/usuarios/${usuario.id}/emprestimos?livroId=${livro.id}`);
+        assert.ok(historico.body.data.length > 0);
+        for (const item of historico.body.data) verificarLocalizacao(item);
+        await esperar('/me', 'PATCH', { usuarioId: null, email: '', telefone: null }, 200);
+        const perfil = (await chamar('/me')).body.data;
+        assert.equal(perfil.usuarioId, null);
+        assert.equal(perfil.email, null);
+        assert.equal(perfil.telefone, null);
+        assert.equal(perfil.emprestimosAtivos, 0);
+        assert.equal(perfil.historicoTotal, 0);
+      },
+    );
     await caso('REG-14', '400, 413 e 415 por HTTP real', async () => {
       await esperar('/auth/login', 'POST', '{', 400, 'REQUISICAO_INVALIDA');
       await esperar(
@@ -615,6 +746,8 @@ if (process.argv.includes('--servidor')) {
   } finally {
     await parar();
     try {
+      for (const id of funcionarios)
+        await pool.query('UPDATE funcionarios SET usuario_id = NULL WHERE id = ?', [id]);
       for (const id of emprestimos) {
         await pool.query('DELETE FROM renovacoes WHERE emprestimo_id = ?', [id]);
         await pool.query('DELETE FROM emprestimos WHERE id = ?', [id]);

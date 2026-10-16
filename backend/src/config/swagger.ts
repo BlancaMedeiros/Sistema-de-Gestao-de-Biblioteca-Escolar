@@ -140,10 +140,51 @@ const definition = {
       },
       FuncionarioPerfil: {
         type: 'object',
+        required: [
+          'id',
+          'nome',
+          'login',
+          'email',
+          'telefone',
+          'usuarioId',
+          'matricula',
+          'cargo',
+          'emprestimosAtivos',
+          'historicoTotal',
+        ],
         properties: {
           id: { type: 'integer', example: 1 },
           nome: { type: 'string', example: 'Ana Bibliotecária' },
           login: { type: 'string', example: 'ana.bibliotecaria' },
+          email: { type: 'string', format: 'email', maxLength: 254, nullable: true },
+          telefone: { type: 'string', maxLength: 30, nullable: true },
+          usuarioId: {
+            type: 'integer',
+            minimum: 1,
+            nullable: true,
+            description: 'Vínculo explícito ao leitor; não é inferido pelo ID, nome ou e-mail.',
+          },
+          matricula: {
+            type: 'string',
+            nullable: true,
+            readOnly: true,
+            description: 'Do leitor vinculado; null quando não há vínculo.',
+          },
+          cargo: { type: 'string', enum: ['Funcionário autorizado'], readOnly: true },
+          emprestimosAtivos: {
+            type: 'integer',
+            minimum: 0,
+            readOnly: true,
+            description:
+              'Empréstimos abertos do leitor vinculado, inclusive atrasados; zero sem vínculo.',
+          },
+          historicoTotal: {
+            type: 'integer',
+            minimum: 0,
+            readOnly: true,
+            description:
+              'Total de empréstimos do leitor vinculado, não livros comprovadamente lidos; zero sem vínculo.',
+          },
         },
       },
       Erro: {

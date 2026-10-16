@@ -82,6 +82,9 @@ describe('dashboard e relatório persistentes', () => {
   test('Swagger contém todas as operações restantes e referências resolvíveis', async () => {
     const contrato = (await request(app).get('/api/docs.json')).body;
     const operacoes = {
+      '/auth/logout': ['post'],
+      '/me': ['get', 'patch'],
+      '/me/senha': ['put'],
       '/funcionarios': ['post'],
       '/usuarios': ['get', 'post'],
       '/usuarios/{id}': ['get', 'patch'],
@@ -101,5 +104,18 @@ describe('dashboard e relatório persistentes', () => {
         referencia[1].split('/').reduce((objeto, chave) => objeto?.[chave], contrato),
         referencia[1],
       ).toBeDefined();
+    expect(contrato.components.schemas.FuncionarioPerfil.required).toEqual(
+      expect.arrayContaining([
+        'email',
+        'telefone',
+        'usuarioId',
+        'matricula',
+        'cargo',
+        'emprestimosAtivos',
+        'historicoTotal',
+      ]),
+    );
+    expect(contrato.components.schemas.PerfilEdicao.properties.usuarioId.nullable).toBe(true);
+    expect(contrato.components.schemas.Emprestimo.properties.livroLocalizacao.readOnly).toBe(true);
   });
 });

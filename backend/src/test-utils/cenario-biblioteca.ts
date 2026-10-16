@@ -50,6 +50,9 @@ export async function criarCenarioBiblioteca() {
     },
     async limpar() {
       try {
+        await pool.query('UPDATE funcionarios SET usuario_id = NULL WHERE id = ?', [
+          sessao.funcionario.id,
+        ]);
         if (emprestimos.size) {
           await pool.query('DELETE FROM renovacoes WHERE emprestimo_id IN (?)', [[...emprestimos]]);
           await pool.query('DELETE FROM emprestimos WHERE id IN (?)', [[...emprestimos]]);

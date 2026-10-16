@@ -107,7 +107,7 @@ export const componentesNegocio = {
     },
     NaoEncontrado: respostaErro('404: leitor, livro ou empréstimo inexistente/ID inválido.'),
     ConflitoNegocio: respostaErro(
-      '409: duplicidade de matrícula/login, estado incompatível, limite de empréstimos/renovações, atraso ou chave de idempotência reutilizada com outros dados.',
+      '409: duplicidade de matrícula/login, leitor já vinculado a outra conta, estado incompatível, limite de empréstimos/renovações, atraso ou chave de idempotência reutilizada com outros dados.',
     ),
   },
   schemas: {
@@ -156,6 +156,25 @@ export const componentesNegocio = {
           maxLength: 1024,
           writeOnly: true,
         },
+        email: propriedadesUsuario.email,
+        telefone: propriedadesUsuario.telefone,
+        usuarioId: {
+          ...identificador,
+          nullable: true,
+          description: 'Leitor já cadastrado; vínculo opcional e único por conta/leitor.',
+        },
+      },
+    },
+    PerfilEdicao: {
+      type: 'object',
+      minProperties: 1,
+      description:
+        'Ao menos um campo editável. null/texto vazio apaga contato; usuarioId null remove vínculo sem apagar o leitor ou histórico. Login, cargo, matrícula e contadores não são editáveis.',
+      properties: {
+        nome: { type: 'string', minLength: 1, maxLength: 120 },
+        email: propriedadesUsuario.email,
+        telefone: propriedadesUsuario.telefone,
+        usuarioId: { ...identificador, nullable: true },
       },
     },
     EmprestimoEntrada: {
@@ -170,8 +189,26 @@ export const componentesNegocio = {
         id: identificador,
         livroId: identificador,
         livroTitulo: { type: 'string' },
+        livro: {
+          type: 'string',
+          readOnly: true,
+          description: 'Mesmo valor de livroTitulo; compatível com a tabela do dashboard.',
+        },
+        livroEstante: { type: 'string', nullable: true, readOnly: true },
+        livroPrateleira: { type: 'string', nullable: true, readOnly: true },
+        livroLocalizacao: {
+          type: 'string',
+          readOnly: true,
+          description:
+            'Localização cadastrada atualmente, também para livro inativo; não é snapshot da data do empréstimo.',
+        },
         usuarioId: identificador,
         usuarioNome: { type: 'string' },
+        usuario: {
+          type: 'string',
+          readOnly: true,
+          description: 'Mesmo valor de usuarioNome; compatível com a tabela do dashboard.',
+        },
         funcionarioId: identificador,
         dataEmprestimo: data,
         devolucaoPrevista: data,

@@ -7,6 +7,8 @@ export interface EmprestimoRow extends RowDataPacket {
   id: number;
   livroId: number;
   livroTitulo: string;
+  livroEstante: string | null;
+  livroPrateleira: string | null;
   usuarioId: number;
   usuarioNome: string;
   funcionarioId: number;
@@ -28,10 +30,17 @@ export function statusEmprestimo(
 }
 export const paraEmprestimoApi = (linha: EmprestimoRow, hoje: string) => ({
   ...linha,
+  livro: linha.livroTitulo,
+  usuario: linha.usuarioNome,
+  livroLocalizacao:
+    linha.livroEstante || linha.livroPrateleira
+      ? `${linha.livroEstante || 'S/E'} - ${linha.livroPrateleira || 'S/P'}`
+      : 'Não informada',
   status: statusEmprestimo(linha, hoje),
 });
 
 const selecao = `SELECT e.id, e.livro_id AS livroId, l.titulo AS livroTitulo,
+  l.estante AS livroEstante, l.prateleira AS livroPrateleira,
   e.usuario_id AS usuarioId, u.nome AS usuarioNome, e.funcionario_id AS funcionarioId,
   DATE_FORMAT(e.data_emprestimo, '%Y-%m-%d') AS dataEmprestimo,
   DATE_FORMAT(e.devolucao_prevista, '%Y-%m-%d') AS devolucaoPrevista,

@@ -5,12 +5,14 @@ import { ErroApi, erroValidacao } from '../../http/erros.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { provisionarFuncionario } from './provisionar-funcionario.js';
 import { SENHA_MINIMA } from './password.js';
+import { camposContatoFuncionario, obterPerfilFuncionario } from './perfil-funcionario.js';
 
 export const funcionariosRouter = Router();
 const cadastroSchema = z.object({
   nome: z.string().trim().min(1).max(120),
   login: z.string().trim().min(1).max(60).regex(/^\S+$/, 'O login não pode conter espaços.'),
   senha: z.string().min(SENHA_MINIMA).max(1024),
+  ...camposContatoFuncionario,
 });
 /**
  * @openapi
@@ -34,6 +36,7 @@ const cadastroSchema = z.object({
  *               properties:
  *                 data: { $ref: '#/components/schemas/FuncionarioPerfil' }
  *       401: { $ref: '#/components/responses/SemSessao' }
+ *       404: { $ref: '#/components/responses/NaoEncontrado' }
  *       409: { $ref: '#/components/responses/ConflitoNegocio' }
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  */
@@ -51,9 +54,7 @@ funcionariosRouter.post('/funcionarios', requireAuth, async (request, response, 
       throw new ErroApi(422, 'DADOS_INVALIDOS', 'Confira os dados informados.', {
         corpo: resultado.erros,
       });
-    response
-      .status(201)
-      .json({ data: { id: resultado.id, nome: parsed.data.nome, login: resultado.login } });
+    response.status(201).json({ data: await obterPerfilFuncionario(pool, resultado.id) });
   } catch (erro) {
     next(erro);
   }

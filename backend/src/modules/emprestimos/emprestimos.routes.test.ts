@@ -15,6 +15,59 @@ describe('empréstimos, renovações e devoluções persistentes', () => {
     await c?.limpar();
   });
   const url = (id: number) => `/api/v1/emprestimos/${id}`;
+  test('localização e nomes de exibição permanecem disponíveis depois da inativação do livro', async () => {
+    const livro = await c.livro({ estante: 'E-QAT', prateleira: 'P-QAT' });
+    const leitor = await c.usuario();
+    const criado = await c.emprestar(livro.id, leitor.id);
+    const campos = {
+      livro: livro.titulo,
+      usuario: leitor.nome,
+      livroEstante: 'E-QAT',
+      livroPrateleira: 'P-QAT',
+      livroLocalizacao: 'E-QAT - P-QAT',
+    };
+    expect(criado.body.data).toMatchObject(campos);
+    const relatorio = await c.agente
+      .get('/api/v1/relatorios/pendencias')
+      .query({ usuarioId: leitor.id });
+    expect(relatorio.body.data[0]).toMatchObject(campos);
+    await c.acao(criado.body.data.id, 'devolucao');
+    expect((await c.agente.delete(`/api/v1/livros/${livro.id}`)).status).toBe(204);
+    expect((await c.agente.get(`/api/v1/livros/${livro.id}`)).status).toBe(404);
+    expect((await c.agente.get(url(criado.body.data.id))).body.data).toMatchObject(campos);
+    expect(
+      (await c.agente.get(`/api/v1/usuarios/${leitor.id}/emprestimos`)).body.data[0],
+    ).toMatchObject(campos);
+    expect(
+      (await c.agente.get('/api/v1/emprestimos').query({ usuarioId: leitor.id })).body.data[0],
+    ).toMatchObject(campos);
+    const recentes = (await c.agente.get('/api/v1/dashboard')).body.data.ultimosEmprestimos;
+    expect(recentes.find((e: { id: number }) => e.id === criado.body.data.id)).toMatchObject(
+      campos,
+    );
+  });
+  test('localização usa o cadastro atual; resposta idempotente mantém a original', async () => {
+    const livro = await c.livro({ estante: 'E1' });
+    const leitor = await c.usuario();
+    const chave = randomUUID();
+    const criado = await c.emprestar(livro.id, leitor.id, chave);
+    expect(criado.body.data.livroLocalizacao).toBe('E1 - S/P');
+    await c.agente.patch(`/api/v1/livros/${livro.id}`).send({ estante: null, prateleira: 'P2' });
+    expect((await c.agente.get(url(criado.body.data.id))).body.data.livroLocalizacao).toBe(
+      'S/E - P2',
+    );
+    expect((await c.emprestar(livro.id, leitor.id, chave)).body).toEqual(criado.body);
+  });
+  test('livro sem localização informa ausência sem inventar dados', async () => {
+    const livro = await c.livro();
+    const leitor = await c.usuario();
+    const criado = await c.emprestar(livro.id, leitor.id);
+    expect(criado.body.data).toMatchObject({
+      livroEstante: null,
+      livroPrateleira: null,
+      livroLocalizacao: 'Não informada',
+    });
+  });
   async function preparar() {
     const livro = await c.livro();
     const usuario = await c.usuario();

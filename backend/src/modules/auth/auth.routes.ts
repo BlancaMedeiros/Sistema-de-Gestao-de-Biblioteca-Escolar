@@ -4,9 +4,14 @@ import { z } from 'zod';
 import { pool } from '../../config/database.js';
 import { NOME_COOKIE_SESSAO, opcoesCookieSessao } from '../../config/session.js';
 import { destroyOtherSessions } from '../../config/session-store.js';
+import { erroValidacao } from '../../http/erros.js';
 import { requireAuth } from '../../middleware/require-auth.js';
 import { alterarSenha, autenticar } from './auth.service.js';
-import { findFuncionarioById, updateFuncionarioNome } from './funcionarios.repository.js';
+import {
+  editarPerfilFuncionario,
+  obterPerfilFuncionario,
+  perfilEdicaoSchema,
+} from './perfil-funcionario.js';
 import { SENHA_MINIMA } from './password.js';
 
 export const authRouter = Router();
@@ -14,10 +19,6 @@ export const authRouter = Router();
 const loginSchema = z.object({
   login: z.string().trim().min(1),
   senha: z.string().min(1),
-});
-
-const atualizarPerfilSchema = z.object({
-  nome: z.string().trim().min(1).max(120),
 });
 
 const alterarSenhaSchema = z.object({
@@ -92,13 +93,14 @@ authRouter.post('/auth/login', async (request, response, next) => {
       return;
     }
 
+    const perfil = await obterPerfilFuncionario(pool, funcionario.id);
     await new Promise<void>((resolve, reject) => {
       request.session.regenerate((error) => (error ? reject(error) : resolve()));
     });
 
     request.session.funcionarioId = funcionario.id;
 
-    response.status(200).json({ data: funcionario });
+    response.status(200).json({ data: perfil });
   } catch (error) {
     next(error);
   }
@@ -110,6 +112,7 @@ authRouter.post('/auth/login', async (request, response, next) => {
  *   post:
  *     summary: Encerra a sessão atual.
  *     tags: [Auth]
+ *     security: [{ sessao: [] }]
  *     responses:
  *       204:
  *         description: Sessão encerrada.
@@ -138,6 +141,7 @@ authRouter.post('/auth/logout', requireAuth, (request, response, next) => {
  *   get:
  *     summary: Retorna o perfil do funcionário autenticado.
  *     tags: [Auth]
+ *     security: [{ sessao: [] }]
  *     responses:
  *       200:
  *         description: Perfil da sessão atual.
@@ -157,18 +161,8 @@ authRouter.post('/auth/logout', requireAuth, (request, response, next) => {
  */
 authRouter.get('/me', requireAuth, async (request, response, next) => {
   try {
-    const funcionario = await findFuncionarioById(pool, request.session.funcionarioId as number);
-
-    if (!funcionario || !funcionario.ativo) {
-      request.session.destroy(() => undefined);
-      response.status(401).json({
-        error: { code: 'NAO_AUTENTICADO', message: 'Sessão ausente ou expirada.' },
-      });
-      return;
-    }
-
     response.status(200).json({
-      data: { id: funcionario.id, nome: funcionario.nome, login: funcionario.login },
+      data: await obterPerfilFuncionario(pool, request.session.funcionarioId!),
     });
   } catch (error) {
     next(error);
@@ -180,21 +174,15 @@ authRouter.get('/me', requireAuth, async (request, response, next) => {
  * /me:
  *   patch:
  *     summary: Atualiza os dados permitidos do próprio perfil.
- *     description: Hoje só permite alterar o nome. Login e senha têm rotas próprias.
+ *     description: Edição parcial de nome, email, telefone e vínculo explícito usuarioId. Login, cargo, matrícula e contadores não são editáveis aqui. Senha usa PUT /me/senha.
  *     tags: [Auth]
+ *     security: [{ sessao: [] }]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [nome]
- *             properties:
- *               nome:
- *                 type: string
- *                 minLength: 1
- *                 maxLength: 120
- *                 example: Ana Bibliotecária
+ *             $ref: '#/components/schemas/PerfilEdicao'
  *     responses:
  *       200:
  *         description: Perfil atualizado.
@@ -211,36 +199,26 @@ authRouter.get('/me', requireAuth, async (request, response, next) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Erro'
+ *       404: { $ref: '#/components/responses/NaoEncontrado' }
+ *       409: { $ref: '#/components/responses/ConflitoNegocio' }
  *       422:
- *         description: Nome ausente ou vazio.
+ *         description: Campos inválidos ou ausência de campos editáveis.
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Erro'
  */
 authRouter.patch('/me', requireAuth, async (request, response, next) => {
-  const parsed = atualizarPerfilSchema.safeParse(request.body);
+  const parsed = perfilEdicaoSchema.safeParse(request.body);
 
   if (!parsed.success) {
-    response.status(422).json({
-      error: {
-        code: 'DADOS_INVALIDOS',
-        message: 'Informe um nome válido.',
-        fields: parsed.error.flatten().fieldErrors,
-      },
-    });
+    erroValidacao(response, parsed.error);
     return;
   }
 
   try {
-    const atualizado = await updateFuncionarioNome(
-      pool,
-      request.session.funcionarioId as number,
-      parsed.data.nome,
-    );
-
     response.status(200).json({
-      data: { id: atualizado.id, nome: atualizado.nome, login: atualizado.login },
+      data: await editarPerfilFuncionario(pool, request.session.funcionarioId!, parsed.data),
     });
   } catch (error) {
     next(error);
@@ -254,6 +232,7 @@ authRouter.patch('/me', requireAuth, async (request, response, next) => {
  *     summary: Altera a própria senha.
  *     description: Invalida as demais sessões do funcionário; a sessão atual continua válida.
  *     tags: [Auth]
+ *     security: [{ sessao: [] }]
  *     requestBody:
  *       required: true
  *       content:

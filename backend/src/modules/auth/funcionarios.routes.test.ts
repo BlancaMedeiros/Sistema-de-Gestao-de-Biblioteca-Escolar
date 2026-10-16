@@ -50,7 +50,17 @@ describe('cadastro HTTP de funcionários', () => {
     expect((await request(app).post('/api/v1/funcionarios').send(dados)).status).toBe(401);
     const criado = await sessao.agente.post('/api/v1/funcionarios').send(dados);
     expect(criado.status).toBe(201);
-    expect(Object.keys(criado.body.data).sort()).toEqual(['id', 'login', 'nome']);
+    expect(criado.body.data).toMatchObject({
+      cargo: 'Funcionário autorizado',
+      email: null,
+      telefone: null,
+      usuarioId: null,
+      matricula: null,
+      emprestimosAtivos: 0,
+      historicoTotal: 0,
+    });
+    expect(criado.body.data.senha_hash).toBeUndefined();
+    expect(criado.body.data.senha).toBeUndefined();
     expect(criado.body.data.nome).toBe('Funcionário QAT');
     expect(
       (await request(app).post('/api/v1/auth/login').send({ login, senha: dados.senha })).status,
