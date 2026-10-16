@@ -1,0 +1,1295 @@
+{
+  "inicio": "2026-10-16T18:58:03.770Z",
+  "metodo": "HTTPS real na API publicada, fixtures exclusivas da rodada",
+  "url": "https://projeto-integrador-2-6352b.web.app",
+  "release": "78c9bf8c332bd0e2ea7f5ccd61fcfa5bf85f5d41",
+  "prefixo": "qat-pub-86f4b5cf-889c-4cfa-bb28-a79ff1aba968",
+  "banco": {
+    "tipo": "TiDB Cloud",
+    "versao": "8.0.11-TiDB-v8.5.3-serverless"
+  },
+  "casos": [
+    {
+      "id": "API-01",
+      "descricao": "login válido, inválido e incompleto",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-03",
+      "descricao": "perfil da sessão sem dados privados",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-04",
+      "descricao": "perfil parcial e limites do nome",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-05",
+      "descricao": "troca de senha e invalidação de outra sessão",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-06",
+      "descricao": "funcionário, duplicidade e login da nova conta",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "COMPAT-01",
+      "descricao": "contatos do perfil persistem e campos calculados são protegidos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-07",
+      "descricao": "cadastro de livro e validação",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-08",
+      "descricao": "busca literal e sem acento",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-09",
+      "descricao": "livro persistido e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-10",
+      "descricao": "edição parcial e saldo sem gravação inválida",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-12",
+      "descricao": "leitor, matrícula única e campos inválidos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-13",
+      "descricao": "listagem de leitores com filtros e paginação",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-14",
+      "descricao": "consulta de leitor e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-15",
+      "descricao": "PATCH de leitor preserva omitidos e limpa opcional",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "COMPAT-02",
+      "descricao": "vínculo explícito e exclusivo fornece matrícula sem misturar contatos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-17",
+      "descricao": "empréstimo com datas e operador do servidor",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-16",
+      "descricao": "histórico do leitor com resumo independente de filtro",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-18",
+      "descricao": "filtros combinados de empréstimos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-19",
+      "descricao": "consulta de empréstimo e ID inválido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-22",
+      "descricao": "dashboard conciliado antes/depois",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-23",
+      "descricao": "pendências e rejeição de filtro Devolvido",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-05a",
+      "descricao": "bloqueio de inativação com empréstimo aberto",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-20",
+      "descricao": "duas renovações e rejeição da terceira",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-06",
+      "descricao": "idempotência de cadastro, corpo divergente e header obrigatório",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-09",
+      "descricao": "novas requisições públicas preservam sessão, registros e idempotência",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-21",
+      "descricao": "devolução, repetição e recomposição do saldo",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "COMPAT-03",
+      "descricao": "devolução atualiza os indicadores pessoais mantendo o histórico",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-01",
+      "descricao": "limite de três e liberação após devolver",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-03",
+      "descricao": "atraso bloqueia emprestar/renovar até devolver",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-07",
+      "descricao": "HTTP concorrente disputa a última unidade",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-12",
+      "descricao": "paginação estável, busca literal e filtros inválidos",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-10-publico",
+      "descricao": "ISBN normalizado e duplicidade sem gravação parcial",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-06-publico",
+      "descricao": "mesma chave em duas chamadas simultaneas tem um unico efeito",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-04-publico",
+      "descricao": "manutencao total bloqueia nova retirada sem alterar estoque",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-11",
+      "descricao": "inativação após devolução preserva histórico",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "COMPAT-04",
+      "descricao": "localização e nomes sobrevivem à inativação em consultas e histórico",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-14",
+      "descricao": "400, 413 e 415 por HTTP real",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "API-02",
+      "descricao": "logout invalida a sessão usada",
+      "resultado": "aprovado"
+    },
+    {
+      "id": "REG-13",
+      "descricao": "áreas protegidas rejeitam cliente sem sessão",
+      "resultado": "aprovado"
+    }
+  ],
+  "requisicoes": [
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 401,
+      "erro": "CREDENCIAIS_INVALIDAS"
+    },
+    {
+      "caso": "API-01",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-03",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-04",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 401,
+      "erro": "SENHA_ATUAL_INVALIDA"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "PUT",
+      "caminho": "/me/senha",
+      "status": 204
+    },
+    {
+      "caso": "API-05",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 401,
+      "erro": "CREDENCIAIS_INVALIDAS"
+    },
+    {
+      "caso": "API-05",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-05",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 201,
+      "id": 30006
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 409,
+      "erro": "LOGIN_DUPLICADO"
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-06",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 200,
+      "id": 30006
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 404,
+      "erro": "USUARIO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-01",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 200
+    },
+    {
+      "caso": "API-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 201,
+      "id": 1
+    },
+    {
+      "caso": "API-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-08",
+      "metodo": "GET",
+      "caminho": "/livros?busca=qat-pub-86f4b5cf-889c-4cfa-bb28-a79ff1aba968%20memorias%20%25_!",
+      "status": 200
+    },
+    {
+      "caso": "API-09",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-09",
+      "metodo": "GET",
+      "caminho": "/livros/0",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/1",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-10",
+      "metodo": "PATCH",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 201,
+      "id": 1
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 409,
+      "erro": "MATRICULA_DUPLICADA"
+    },
+    {
+      "caso": "API-12",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "API-13",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-pub-86f4b5cf-889c-4cfa-bb28-a79ff1aba968&tipo=Aluno&status=Ativo&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-14",
+      "metodo": "GET",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-14",
+      "metodo": "GET",
+      "caminho": "/usuarios/0",
+      "status": 404,
+      "erro": "USUARIO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-15",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-15",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "COMPAT-02",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-02",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 409,
+      "erro": "LEITOR_JA_VINCULADO"
+    },
+    {
+      "caso": "COMPAT-02",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30006
+    },
+    {
+      "caso": "COMPAT-02",
+      "metodo": "GET",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "COMPAT-02",
+      "metodo": "PATCH",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-17",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 1
+    },
+    {
+      "caso": "API-17",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "API-17",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-16",
+      "metodo": "GET",
+      "caminho": "/usuarios/1/emprestimos?status=Devolvido",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 0
+      }
+    },
+    {
+      "caso": "API-18",
+      "metodo": "GET",
+      "caminho": "/emprestimos?usuarioId=1&livroId=1&status=Abertos&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-19",
+      "metodo": "GET",
+      "caminho": "/emprestimos/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-19",
+      "metodo": "GET",
+      "caminho": "/emprestimos/0",
+      "status": 404,
+      "erro": "EMPRESTIMO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-22",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 200
+    },
+    {
+      "caso": "API-23",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?usuarioId=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 1
+      }
+    },
+    {
+      "caso": "API-23",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?status=Devolvido",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-05a",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/1",
+      "status": 409,
+      "erro": "USUARIO_COM_EMPRESTIMOS"
+    },
+    {
+      "caso": "REG-05a",
+      "metodo": "DELETE",
+      "caminho": "/livros/1",
+      "status": 409,
+      "erro": "LIVRO_COM_EMPRESTIMOS"
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/renovacoes",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/renovacoes",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/renovacoes",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-20",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/renovacoes",
+      "status": 409,
+      "erro": "LIMITE_RENOVACOES"
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 1
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "CHAVE_IDEMPOTENCIA_REUTILIZADA"
+    },
+    {
+      "caso": "REG-06",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "GET",
+      "caminho": "/emprestimos/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 1
+    },
+    {
+      "caso": "REG-09",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/renovacoes",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/devolucao",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/devolucao",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-21",
+      "metodo": "POST",
+      "caminho": "/emprestimos/1/devolucao",
+      "status": 409,
+      "erro": "EMPRESTIMO_DEVOLVIDO"
+    },
+    {
+      "caso": "API-21",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-21",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias?usuarioId=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 0
+      }
+    },
+    {
+      "caso": "COMPAT-03",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-03",
+      "metodo": "GET",
+      "caminho": "/emprestimos/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 2
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 3
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 4
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIMITE_EMPRESTIMOS"
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/2/devolucao",
+      "status": 200,
+      "id": 2
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 5
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/3/devolucao",
+      "status": 200,
+      "id": 3
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/4/devolucao",
+      "status": 200,
+      "id": 4
+    },
+    {
+      "caso": "REG-01",
+      "metodo": "POST",
+      "caminho": "/emprestimos/5/devolucao",
+      "status": 200,
+      "id": 5
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 6
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 7
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "GET",
+      "caminho": "/emprestimos/6",
+      "status": 200,
+      "id": 6
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "USUARIO_COM_ATRASOS"
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/7/renovacoes",
+      "status": 409,
+      "erro": "USUARIO_COM_ATRASOS"
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/6/devolucao",
+      "status": 200,
+      "id": 6
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/7/renovacoes",
+      "status": 200,
+      "id": 7
+    },
+    {
+      "caso": "REG-03",
+      "metodo": "POST",
+      "caminho": "/emprestimos/7/devolucao",
+      "status": 200,
+      "id": 7
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 201,
+      "id": 2
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 201,
+      "id": 3
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 8
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIVRO_INDISPONIVEL"
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "GET",
+      "caminho": "/livros/2",
+      "status": 200,
+      "id": 2
+    },
+    {
+      "caso": "REG-07",
+      "metodo": "POST",
+      "caminho": "/emprestimos/8/devolucao",
+      "status": 200,
+      "id": 8
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-pub-86f4b5cf-889c-4cfa-bb28-a79ff1aba968&pageSize=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 2
+      }
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?busca=qat-pub-86f4b5cf-889c-4cfa-bb28-a79ff1aba968&pageSize=1&page=2",
+      "status": 200,
+      "pagination": {
+        "page": 2,
+        "pageSize": 1,
+        "total": 2
+      }
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/usuarios?page=1&page=2",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-12",
+      "metodo": "GET",
+      "caminho": "/emprestimos?vencimentoDe=2026-02-30",
+      "status": 422,
+      "erro": "DADOS_INVALIDOS"
+    },
+    {
+      "caso": "REG-10-publico",
+      "metodo": "PATCH",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "REG-10-publico",
+      "metodo": "POST",
+      "caminho": "/livros",
+      "status": 201,
+      "id": 3
+    },
+    {
+      "caso": "REG-10-publico",
+      "metodo": "PATCH",
+      "caminho": "/livros/3",
+      "status": 409,
+      "erro": "ISBN_DUPLICADO"
+    },
+    {
+      "caso": "REG-10-publico",
+      "metodo": "GET",
+      "caminho": "/livros/3",
+      "status": 200,
+      "id": 3
+    },
+    {
+      "caso": "REG-06-publico",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 9
+    },
+    {
+      "caso": "REG-06-publico",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 201,
+      "id": 9
+    },
+    {
+      "caso": "REG-06-publico",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "REG-06-publico",
+      "metodo": "POST",
+      "caminho": "/emprestimos/9/devolucao",
+      "status": 200,
+      "id": 9
+    },
+    {
+      "caso": "REG-06-publico",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "REG-04-publico",
+      "metodo": "PATCH",
+      "caminho": "/livros/3",
+      "status": 200,
+      "id": 3
+    },
+    {
+      "caso": "REG-04-publico",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIVRO_INDISPONIVEL"
+    },
+    {
+      "caso": "REG-04-publico",
+      "metodo": "GET",
+      "caminho": "/livros/3",
+      "status": 200,
+      "id": 3
+    },
+    {
+      "caso": "REG-04-publico",
+      "metodo": "PATCH",
+      "caminho": "/livros/3",
+      "status": 200,
+      "id": 3
+    },
+    {
+      "caso": "API-11",
+      "metodo": "DELETE",
+      "caminho": "/livros/1",
+      "status": 204
+    },
+    {
+      "caso": "API-11",
+      "metodo": "GET",
+      "caminho": "/livros/1",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "DELETE",
+      "caminho": "/livros/1",
+      "status": 404,
+      "erro": "LIVRO_NAO_ENCONTRADO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "GET",
+      "caminho": "/emprestimos/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-11",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-11",
+      "metodo": "POST",
+      "caminho": "/usuarios",
+      "status": 409,
+      "erro": "MATRICULA_DUPLICADA"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "USUARIO_INATIVO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "PATCH",
+      "caminho": "/usuarios/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "API-11",
+      "metodo": "POST",
+      "caminho": "/emprestimos",
+      "status": 409,
+      "erro": "LIVRO_INATIVO"
+    },
+    {
+      "caso": "API-11",
+      "metodo": "PATCH",
+      "caminho": "/livros/3",
+      "status": 409,
+      "erro": "ISBN_DUPLICADO"
+    },
+    {
+      "caso": "COMPAT-04",
+      "metodo": "GET",
+      "caminho": "/emprestimos/1",
+      "status": 200,
+      "id": 1
+    },
+    {
+      "caso": "COMPAT-04",
+      "metodo": "GET",
+      "caminho": "/emprestimos?livroId=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 8
+      }
+    },
+    {
+      "caso": "COMPAT-04",
+      "metodo": "GET",
+      "caminho": "/usuarios/1/emprestimos?livroId=1",
+      "status": 200,
+      "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "total": 8
+      }
+    },
+    {
+      "caso": "COMPAT-04",
+      "metodo": "PATCH",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "COMPAT-04",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 200,
+      "id": 30005
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 400,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 413,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "REG-14",
+      "metodo": "POST",
+      "caminho": "/auth/login",
+      "status": 415,
+      "erro": "REQUISICAO_INVALIDA"
+    },
+    {
+      "caso": "API-02",
+      "metodo": "POST",
+      "caminho": "/auth/logout",
+      "status": 204
+    },
+    {
+      "caso": "API-02",
+      "metodo": "GET",
+      "caminho": "/me",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/livros",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/usuarios",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/emprestimos",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/dashboard",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "GET",
+      "caminho": "/relatorios/pendencias",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    },
+    {
+      "caso": "REG-13",
+      "metodo": "POST",
+      "caminho": "/funcionarios",
+      "status": 401,
+      "erro": "NAO_AUTENTICADO"
+    }
+  ],
+  "cookie": {
+    "nome": "__session",
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax"
+  },
+  "operacoesCobertas": 23,
+  "limites": [
+    "Sem reinício forçado da produção; persistência por reinício coberta no QAT local/CI.",
+    "Sem teste de carga ou auditoria completa de segurança; erros internos induzidos cobertos localmente."
+  ],
+  "resultado": "aprovado",
+  "fixturesRemovidas": {
+    "funcionarios": 2,
+    "livros": 3,
+    "leitores": 2,
+    "emprestimos": 9
+  },
+  "limpeza": "fixtures próprias removidas",
+  "fim": "2026-10-16T18:59:07.135Z",
+  "verificacaoFinalBanco": {
+    "migrations": [
+      "0001_create_funcionarios.sql",
+      "0002_create_sessoes.sql",
+      "0003_create_livros.sql",
+      "0004_create_usuarios.sql",
+      "0005_create_emprestimos.sql",
+      "0006_create_renovacoes.sql",
+      "0007_create_idempotencia.sql",
+      "0008_extend_perfil_funcionarios.sql",
+      "0009_add_vinculo_funcionario_leitor.sql"
+    ],
+    "tidbEnableCheckConstraint": "OFF",
+    "checksPersistidos": [],
+    "fixturesRestantes": {
+      "funcionarios": 0,
+      "livros": 0,
+      "usuarios": 0
+    }
+  }
+}

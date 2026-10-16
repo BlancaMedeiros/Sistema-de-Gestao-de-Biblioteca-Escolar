@@ -4,6 +4,8 @@
 
 ## O que precisa estar aprovado
 
+**Publicação verificada em 16/10:** o [QAT da API pública](qat-publicado-2026-10-16.md) registra as 23 operações aprovadas em 39 cenários/145 requisições, a limpeza da rodada e a ressalva de CHECK no TiDB. O modelo abaixo continua disponível para novas rodadas.
+
 Uma rodada completa precisa identificar a versão testada, comprovar as operações e regras, registrar os defeitos e permitir que Bianca reproduza o ambiente. Executar um endpoint e receber 200 não basta: confira o corpo, o efeito nos dados e a ausência de efeito quando a operação é rejeitada.
 
 Para esta entrega, o aceite é **do backend para integração local**. O aceite do sistema pela interface depende da integração das telas, da sessão no Angular e da correção dos testes de frontend já falhos. Registre essas pendências no repasse.

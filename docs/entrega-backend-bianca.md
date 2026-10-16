@@ -1,6 +1,6 @@
 # Entrega das APIs para integração do frontend
 
-As 23 operações do backend estão implementadas na branch `feature/livros`, sobre `feat/backend-foundation`, no [PR 13](https://github.com/BlancaMedeiros/Sistema-de-Gestao-de-Biblioteca-Escolar/pull/13). A revisão inclui Meu Perfil completo e localização nos empréstimos. Veja o [QAT atualizado](qat-resultado-2026-10-16-frontend.md), com versão testada e evidências, e o CI do PR. As novas APIs ainda não foram publicadas.
+As 23 operações do backend foram publicadas em 16/10/2026, pelo squash merge do [PR 13](https://github.com/BlancaMedeiros/Sistema-de-Gestao-de-Biblioteca-Escolar/pull/13) em `feat/backend-foundation`, release `78c9bf8`. A revisão inclui Meu Perfil completo e localização nos empréstimos. Comece pelo [guia rápido da API publicada](bianca-guia-rapido-api-publicada.md); o [QAT público](qat-publicado-2026-10-16.md) registra os 39 cenários/145 requisições aprovados e a ressalva de CHECK no TiDB. O [QAT local anterior](qat-resultado-2026-10-16-frontend.md) permanece como evidência de regressão.
 
 ## Obter e executar a versão
 
@@ -8,8 +8,8 @@ Na raiz do clone, preservando alterações locais existentes:
 
 ```powershell
 git fetch origin
-git switch feature/livros
-git pull --ff-only origin feature/livros
+git switch feat/backend-foundation
+git pull --ff-only origin feat/backend-foundation
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
@@ -27,7 +27,7 @@ Espere MySQL/backend saudáveis e `migrate` concluído com código 0. Migrations
 - Prontidão: <http://127.0.0.1:3000/api/ready>.
 - Seed de desenvolvimento: `funcionaria.teste` / `Teste@123`, inicialmente. Senhas já alteradas são preservadas; veja [autenticação](como-testar-autenticacao.md) para criar uma conta local exclusiva.
 
-`127.0.0.1` é o computador de quem executa. Bianca precisa subir o próprio ambiente para usar esses endereços. A URL pública atual não contém esta entrega de APIs.
+`127.0.0.1` é o computador de quem executa. Bianca precisa subir o próprio ambiente para usar esses endereços. Para conferir a API publicada, use o [Swagger público](https://projeto-integrador-2-6352b.web.app/api/docs/), com uma conta fornecida separadamente; não presuma as credenciais da seed local.
 
 ## Apontar o Angular local para o backend local
 
@@ -80,4 +80,4 @@ O [contrato específico para as telas atuais](specs/2026-10-16-aderencia-fronten
 - [ ] Confirmou chamadas do frontend para a API local e o tratamento dos erros de contrato.
 - [ ] Exibiu a localização do DTO mesmo após inativação do livro, sem consultar apenas o acervo ativo.
 
-O QAT técnico local foi executado; estes itens de recebimento ainda dependem da execução pela Bianca. A integração das telas e os testes Angular pendentes pertencem à etapa seguinte. Antes de publicar, concluir as pendências de segurança e de ambiente descritas no resultado do QAT. Nenhuma mensagem foi enviada à Bianca por esta entrega.
+O QAT técnico local e a homologação funcional pública foram executados; estes itens de recebimento ainda dependem da execução pela Bianca. A integração das telas e os testes Angular pendentes pertencem à etapa seguinte. As pendências de segurança e a ressalva de CHECK no banco estão descritas no resultado do QAT público. Nenhuma mensagem foi enviada à Bianca por esta entrega.
