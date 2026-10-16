@@ -1,0 +1,4 @@
+ALTER TABLE funcionarios
+  ADD COLUMN email VARCHAR(254) NULL,
+  ADD COLUMN telefone VARCHAR(30) NULL,
+  ADD COLUMN usuario_id INT UNSIGNED NULL;

@@ -5,6 +5,12 @@ import { databaseIsReady } from './config/database.js';
 import { sessionMiddleware } from './config/session.js';
 import { swaggerSpec } from './config/swagger.js';
 import { authRouter } from './modules/auth/auth.routes.js';
+import { livrosRouter } from './modules/livros/livros.routes.js';
+import { usuariosRouter } from './modules/usuarios/usuarios.routes.js';
+import { emprestimosRouter } from './modules/emprestimos/emprestimos.routes.js';
+import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
+import { funcionariosRouter } from './modules/auth/funcionarios.routes.js';
+import { tratarErros } from './http/erros.js';
 
 export const app = express();
 
@@ -24,7 +30,10 @@ function healthCheck(_request: express.Request, response: express.Response): voi
   });
 }
 
-async function readinessCheck(_request: express.Request, response: express.Response): Promise<void> {
+async function readinessCheck(
+  _request: express.Request,
+  response: express.Response,
+): Promise<void> {
   try {
     const ready = await databaseIsReady();
 
@@ -67,6 +76,11 @@ app.get('/api/docs.json', (_request, response) => {
 });
 
 app.use('/api/v1', authRouter);
+app.use('/api/v1', livrosRouter);
+app.use('/api/v1', usuariosRouter);
+app.use('/api/v1', emprestimosRouter);
+app.use('/api/v1', dashboardRouter);
+app.use('/api/v1', funcionariosRouter);
 
 app.use((_request, response) => {
   response.status(404).json({
@@ -76,3 +90,4 @@ app.use((_request, response) => {
     },
   });
 });
+app.use(tratarErros);

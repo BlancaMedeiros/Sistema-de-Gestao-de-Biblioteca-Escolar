@@ -1,186 +1,86 @@
-# Como testar a autenticação de funcionário
+# Como testar autenticação, perfil e funcionários
 
-Roteiro manual para conferir a primeira fatia de negócio implementada: login, sessão, perfil e Swagger incremental. Cobre só o que existe hoje (`POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me`, `PUT /api/v1/me/senha`) — não há rotas de acervo, leitores ou empréstimos ainda.
+**Roteiro atualizado em 16/10/2026.** Cobre as seis operações de acesso e perfil do [checklist de aceite](qat-aceite-backend.md). O [QAT atualizado](qat-resultado-2026-10-16-frontend.md) comprova estes contratos por HTTP real automatizado e regressão. A prova visual anterior do Swagger está no relatório histórico; não se afirma nova execução manual de todos os passos. Consulte também o [contrato](specs/2026-10-15-apis-restantes-design.md).
 
-Os testes automatizados (40 testes, `npm run test:backend`) já cobrem estes fluxos contra um MySQL real; este roteiro é para você ver o mesmo comportamento rodando de verdade, na sua máquina, e se familiarizar antes de gravar a demonstração (`docs/roteiro-video-demo.md`).
+## 1. Preparar o ambiente e a conta da rodada
 
-## 1. Pré-requisitos
-
-- Docker Desktop em execução.
-- Node.js e npm no host (para os atalhos `npm run ...` da raiz — não é preciso Node dentro do container).
-
-## 2. Subir a stack
-
-Na raiz do repositório (`Sistema-de-Gestao-de-Biblioteca-Escolar/`):
+Com Docker Desktop em execução, dentro da raiz do clone e com `.env` local preenchido:
 
 ```powershell
-Copy-Item .env.example .env   # pule se já tiver um .env
-npm run dev
+docker compose up -d --build backend
+docker compose ps -a
 ```
 
-Aguarde os serviços ficarem de pé. Em outro terminal, confira:
+Espere `backend`/`mysql` saudáveis e `migrate` concluído com código 0. Consulte prontidão em <http://127.0.0.1:3000/api/ready> e Swagger em <http://127.0.0.1:3000/api/docs/>. O Swagger acrescenta `/api/v1` às rotas abaixo.
 
-```powershell
-npm run dev:status
-```
+A seed cria `bibliotecaria.teste` e `funcionaria.teste`, inicialmente com senha `Teste@123`, e preserva senhas já alteradas. Em 15/10, `funcionaria.teste` autenticou com essa senha; `bibliotecaria.teste` a rejeitou. Esse registro não garante as senhas de uma execução futura. Se nenhuma conta local estiver acessível, crie outra com `npm.cmd run dev:funcionario:criar`; o comando solicita os dados e exige dependências do backend instaladas no host (`npm.cmd ci --prefix backend`).
 
-`backend` e `mysql` devem aparecer como `healthy`. O serviço `migrate` aparece como `Exited (0)` — é o esperado: ele aplica as migrations pendentes, cria as contas de teste e sai; o `backend` só inicia depois dele terminar com sucesso (veja `docker compose logs migrate`, deve mostrar `Migrations aplicadas: ...` na primeira vez ou `Nenhuma migration pendente.` depois, seguido do resultado da seed — passo 4).
+Para testar troca de senha sem modificar a conta usada por outras pessoas, primeiro entre com uma conta local acessível e crie um funcionário exclusivo da rodada:
 
-## 3. (Opcional) Rodar as migrations manualmente
-
-Isso já aconteceu sozinho no passo anterior. Só é preciso rodar à mão se você quiser aplicar migrations sem subir a stack inteira (por exemplo, com só o `mysql` de pé):
-
-```powershell
-npm run dev:migrate
-```
-
-Idempotente — pode rodar quantas vezes quiser, inclusive junto com o serviço automático, sem conflito.
-
-## 4. Conferir as contas de teste
-
-O `npm run dev` já criou as contas (o serviço `migrate` roda a seed logo depois das migrations). Confira no log:
-
-```powershell
-docker compose logs migrate
-```
-
-Esperado na primeira subida: uma linha `✔ criado: login=... id=...` por conta. Nas subidas seguintes: `… já existia (nada foi alterado)` para as duas — confirma que a seed não duplica nem reseta senha. O log sempre termina com as credenciais:
-
-| Login | Senha |
-| --- | --- |
-| `bibliotecaria.teste` | `Teste@123` |
-| `funcionaria.teste` | `Teste@123` |
-
-Para recriar as contas sem reiniciar a stack, há `npm run dev:seed:funcionarios` — ele roda no host, então exige `npm ci --prefix backend` na primeira vez.
-
-## 5. Testar pelo Swagger UI
-
-> Verifiquei o fluxo abaixo por HTTP direto (curl e PowerShell — passo 6) e pelos testes automatizados; o comportamento do Swagger UI em si (cookie sendo enviado pelo navegador no "Try it out") é o padrão dessa ferramenta em mesma origem, mas eu não cliquei manualmente nessa UI num navegador real. Se algo neste passo específico não bater, o passo 6 é a referência que eu de fato executei.
-
-1. Abra `http://localhost:3000/api/docs`.
-2. Expanda `POST /auth/login` → **Try it out** → preencha o corpo:
-   ```json
-   { "login": "bibliotecaria.teste", "senha": "Teste@123" }
-   ```
-   → **Execute**. Esperado: `200`, corpo com `data.login` e `data.nome`, e um cookie `__session` no header `Set-Cookie` da resposta (visível na seção "Response headers" do Swagger UI).
-3. Expanda `GET /me` → **Try it out** → **Execute** (o navegador reenvia o cookie automaticamente, já que o Swagger UI está na mesma origem `localhost:3000`). Esperado: `200` com os mesmos dados do funcionário.
-4. Repita o login com uma senha errada. Esperado: `401` com `error.code = "CREDENCIAIS_INVALIDAS"`.
-5. Expanda `POST /auth/logout` → **Execute**. Esperado: `204`, sem corpo.
-6. Repita `GET /me`. Esperado agora: `401` com `error.code = "NAO_AUTENTICADO"` — a sessão foi mesmo encerrada.
-
-## 6. Testar por linha de comando (alternativa ao passo 5)
-
-PowerShell, usando `Invoke-WebRequest` para manter o cookie entre chamadas (`-UseBasicParsing` evita um erro do Windows PowerShell 5.1 em alguns terminais — testei sem ele e deu erro; com ele, funcionou):
-
-```powershell
-$session = $null
-$login = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/login -Method Post `
-  -ContentType "application/json" -Body '{"login":"bibliotecaria.teste","senha":"Teste@123"}' `
-  -SessionVariable session
-$login.StatusCode        # esperado: 200
-$login.Content            # esperado: {"data":{"id":...,"nome":"...","login":"bibliotecaria.teste"}}
-
-$me = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me -WebSession $session
-$me.StatusCode            # esperado: 200
-
-Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/logout -Method Post -WebSession $session
-# esperado: 204
-
-try {
-  Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me -WebSession $session
-} catch {
-  $_.Exception.Response.StatusCode.value__   # esperado: 401
+```json
+{
+  "nome": "Funcionária QAT",
+  "login": "qat.AAAAMMDD.HHMM",
+  "senha": "QatInicial@123"
 }
 ```
 
-## 6.1. Testar o perfil (`PATCH /me` e `PUT /me/senha`)
+Substitua o login por um identificador novo. Funcionário é conta de acesso; leitor de `/usuarios` é outro cadastro.
 
-> **Atenção:** o passo de trocar a senha altera de verdade a conta `bibliotecaria.teste` no seu banco local. Depois de testar, rode o passo de "restaurar" no final desta seção antes de continuar usando a senha documentada (`Teste@123`) em outros testes.
+## 2. Login, cadastro e sessão pelo Swagger
 
-Continuando com o mesmo `$session` do passo 6 (logado como `bibliotecaria.teste`):
+Em cada operação, expanda **Try it out**, preencha os campos e clique em **Execute**. Confira status, corpo e efeito descritos abaixo. O login estabelece o cookie `__session` na mesma origem; não é necessário copiar cookie para Authorize. Não inclua cookies/senhas nas evidências compartilhadas.
 
-```powershell
-$patch = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me -Method Patch `
-  -ContentType "application/json" -Body '{"nome":"Bibliotecaria Renomeada"}' -WebSession $session
-$patch.StatusCode   # esperado: 200
-$patch.Content       # esperado: nome já atualizado
+| Passo | Ação                                                            | Esperado                                                   |
+| ----- | --------------------------------------------------------------- | ---------------------------------------------------------- |
+| 1     | Antes do login, executar `GET /me` e `POST /funcionarios`       | 401 `NAO_AUTENTICADO`; nenhum funcionário criado           |
+| 2     | `POST /auth/login` com `{}`                                     | 422 `DADOS_INVALIDOS`                                      |
+| 3     | Login válido com senha errada                                   | 401 `CREDENCIAIS_INVALIDAS`                                |
+| 4     | Login com uma conta local acessível                             | 200, dados do funcionário sem senha/hash; cookie de sessão |
+| 5     | `GET /me`                                                       | 200 com os dados da conta autenticada                      |
+| 6     | `POST /funcionarios` com os dados exclusivos da rodada          | 201, perfil completo; sem senha/hash                      |
+| 7     | Repetir o cadastro com o mesmo login                            | 409 `LOGIN_DUPLICADO`; conta original preservada           |
+| 8     | Tentar cadastro com nome vazio, login com espaço ou senha curta | 422, sem cadastro parcial                                  |
+| 9     | `POST /auth/logout`                                             | 204, sem corpo                                             |
+| 10    | Repetir `GET /me` e `GET /livros`                               | 401 em ambos                                               |
+| 11    | Fazer login com a conta exclusiva criada no passo 6             | 200; `/me` mostra essa conta                               |
 
-try {
-  Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me/senha -Method Put `
-    -ContentType "application/json" -Body '{"senhaAtual":"errada","novaSenha":"NovaSenha@123"}' -WebSession $session
-} catch {
-  $_.Exception.Response.StatusCode.value__   # esperado: 401
-}
+## 3. Perfil e troca de senha da conta exclusiva
 
-$senhaCerta = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/me/senha -Method Put `
-  -ContentType "application/json" -Body '{"senhaAtual":"Teste@123","novaSenha":"NovaSenha@123"}' -WebSession $session
-$senhaCerta.StatusCode   # esperado: 204
-```
+Com a conta `qat.…` autenticada:
 
-Confirme que a senha antiga para de funcionar e a nova passa a funcionar:
+Antes da troca de senha, confira também os contatos e o vínculo opcional:
 
-```powershell
-try {
-  Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/login -Method Post `
-    -ContentType "application/json" -Body '{"login":"bibliotecaria.teste","senha":"Teste@123"}'
-} catch {
-  $_.Exception.Response.StatusCode.value__   # esperado: 401 — senha antiga não vale mais
-}
+- `GET /me`: dez campos do [perfil completo](specs/2026-10-16-aderencia-frontend.md). Conta sem leitor associado tem `usuarioId`/`matricula` nulos e os dois contadores zero.
+- `PATCH /me` com `{"email":"qat@example.test","telefone":"(11) 90000-0000"}`: 200; GET e novo login preservam contatos. Email inválido ou telefone acima de 30 caracteres dá 422 sem alteração. Null/texto vazio apaga contato.
+- Cadastre um leitor exclusivo da rodada e use seu ID em `{"usuarioId":81}` (substitua 81 pelo ID retornado): matrícula vem desse cadastro. IDs iguais entre tabelas não vinculam a conta automaticamente. Conta e leitor mantêm contatos independentes.
+- Uma segunda conta tentando o mesmo leitor deve receber 409 `LEITOR_JA_VINCULADO`; ID inexistente dá 404 `USUARIO_NAO_ENCONTRADO`. Campos enviados juntos não são gravados quando o vínculo é recusado.
+- Empreste um livro ao leitor associado: ativos e histórico sobem; devolver reduz ativos e mantém histórico. `usuarioId:null` remove associação sem apagar histórico, retornando matrícula nula/contadores zero.
+- Cargo, matrícula, login e contadores são somente leitura. `novaSenha` sozinha em PATCH dá 422; não substitui a rota de senha abaixo.
 
-$nova = Invoke-WebRequest -UseBasicParsing -Uri http://localhost:3000/api/v1/auth/login -Method Post `
-  -ContentType "application/json" -Body '{"login":"bibliotecaria.teste","senha":"NovaSenha@123"}'
-$nova.StatusCode   # esperado: 200
-```
+1. `PATCH /me` com `{"nome":"Funcionária QAT Renomeada"}`: 200. `GET /me` deve refletir o nome e manter o login original.
+2. PATCH com `{"nome":""}` e depois `{}`: 422, sem alterar o nome. Login enviado junto de um nome válido não altera o login.
+3. Abra o Swagger em outro navegador ou numa janela privada e faça login **com a mesma conta exclusiva**. Confirme `GET /me` com 200 nos dois contextos. Duas abas normais compartilham cookie e não comprovam duas sessões distintas.
+4. No primeiro contexto, `PUT /me/senha` com `{"senhaAtual":"errada","novaSenha":"QatAlterada@123"}`: 401 `SENHA_ATUAL_INVALIDA`; senha permanece intacta.
+5. Envie `{"senhaAtual":"QatInicial@123","novaSenha":"curta"}`: 422; senha permanece intacta.
+6. Envie `{"senhaAtual":"QatInicial@123","novaSenha":"QatAlterada@123"}`: 204. A sessão que executou a troca continua com `/me` 200; o outro contexto passa a receber 401.
+7. No contexto já sem sessão, tente a senha antiga: login 401. Com a nova: 200.
+8. Se quiser restaurar a senha inicial da conta exclusiva, use a própria API autenticada: `PUT /me/senha` com `{"senhaAtual":"QatAlterada@123","novaSenha":"QatInicial@123"}`. Espere 204 e confirme o login com a senha restaurada em um contexto sem sessão.
+9. Encerre as sessões utilizadas por `POST /auth/logout`. Uma sessão invalidada já responde 401; na sessão ainda válida o logout responde 204.
 
-**Restaurar o estado documentado** (deleta a conta e recria pela seed, com a senha de novo `Teste@123`):
+Não apague sessões de outras contas nem remova/recrie funcionários para restaurar senha. A seed não redefine senha e o funcionário pode estar ligado ao histórico de movimentações.
 
-```powershell
-"DELETE FROM sessoes; DELETE FROM funcionarios WHERE login = 'bibliotecaria.teste';" | docker compose exec -T mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca'
-npm run dev:seed:funcionarios
-```
+## 4. Persistência e proteção das demais áreas
 
-## 7. Conferir que a sessão persiste no MySQL (não é MemoryStore)
+Faça login novamente. Recarregue o Swagger, execute `/me`, reinicie o backend com `docker compose restart backend`, aguarde prontidão e repita `/me`: a sessão deve continuar válida dentro do seu prazo. O teste é da sessão HTTP no backend; a restauração da sessão no Angular após F5 ainda precisa de integração.
 
-```powershell
-"SELECT COUNT(*) AS sessoes FROM sessoes;" | docker compose exec -T mysql sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" biblioteca'
-```
+Em um contexto sem sessão, confira 401 em livros, leitores, empréstimos, dashboard, pendências e cadastro de funcionários. A suíte automatizada também verifica bloqueio de funcionário inativo e proteção das operações; inativação de funcionário não possui endpoint nesta entrega.
 
-(`$MYSQL_ROOT_PASSWORD` aí é a variável de ambiente *dentro do container* `mysql`, já definida pelo `compose.yaml` — não precisa existir no seu PowerShell. O SQL vai pela entrada padrão, entre aspas duplas do PowerShell; textos dentro do SQL usam aspas **simples**, porque o MySQL roda em modo ANSI, igual ao de produção — `"texto"` seria lido como nome de coluna.)
-
-Durante uma sessão ativa (depois do login, antes do logout) o contador deve ser maior que zero; depois do logout, a linha correspondente some.
-
-Prefere ver visualmente, sem linha de comando? Abra o Adminer em `http://localhost:8080` (login: servidor `mysql`, usuário/senha do `.env`, base `biblioteca`) e navegue nas tabelas `sessoes` e `funcionarios` — ver `README.md`.
-
-## 8. Rodar a suíte automatizada
+Para repetir os testes automatizados e build no ambiente local:
 
 ```powershell
-npm run test:backend
+docker compose exec -T backend npm test
+docker compose exec -T backend npm run build
 ```
 
-Esperado: todos os testes passando (nenhum `skip`, nenhum `fail`). Esses testes limpam os próprios dados ao final — não interferem com as contas do passo 4.
-
-## 9. Checklist rápido
-
-- [ ] `docker compose ps` mostra `migrate` como `Exited (0)` e `backend`/`mysql` como `healthy`.
-- [ ] `npm run dev:migrate` (manual) roda sem erro e é idempotente.
-- [ ] `docker compose logs migrate` mostra as contas de teste criadas na primeira subida e `já existia` nas seguintes (não duplica, não reseta senha).
-- [ ] Login com credenciais corretas → `200` + cookie.
-- [ ] Login com senha errada → `401`.
-- [ ] Login com corpo incompleto (`{}`) → `422`.
-- [ ] `GET /me` sem cookie → `401`.
-- [ ] `GET /me` com cookie válido → `200` com os dados do funcionário logado.
-- [ ] `POST /auth/logout` → `204`, e o `GET /me` seguinte volta a dar `401`.
-- [ ] `PATCH /me` com nome válido → `200`, refletido no `GET /me` seguinte.
-- [ ] `PATCH /me` com nome vazio → `422`.
-- [ ] `PUT /me/senha` com senha atual errada → `401`, senha não muda.
-- [ ] `PUT /me/senha` com senha atual certa → `204`; login com a senha antiga passa a dar `401`, com a nova dá `200`.
-- [ ] `http://localhost:3000/api/docs` abre e lista as rotas de `/auth/*` e `/me`.
-- [ ] `npm run test:backend` passa 100%.
-
-## O que esta fatia deliberadamente não cobre
-
-Sem CSRF completo, sem limite de tentativas de login, sem papéis distintos (ADMIN/OPERADOR — hoje é um único nível, "funcionário autorizado"), sem nenhuma rota de acervo/leitores/empréstimos. Ver `docs/arquitetura.md` para o que vem a seguir.
-
-## Pronto para gravar?
-
-Depois de passar por este roteiro e se sentir confortável com os fluxos, siga `docs/roteiro-video-demo.md` para a gravação em si — é mais curto, pensado para ~5-6 minutos de vídeo, e não repete as explicações de "por quê", só o "o quê mostrar" e "o que falar".
+Registre os resultados, versão e evidências nos casos API-01–06 e REG-09/13 do [checklist de aceite](qat-aceite-backend.md). Não marque AP apenas por seguir as instruções: registre o resultado observado. CSRF completo, limite de tentativas e homologação pela interface Angular continuam pendentes, conforme o QAT.

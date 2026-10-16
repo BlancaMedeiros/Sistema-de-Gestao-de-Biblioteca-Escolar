@@ -12,12 +12,18 @@ describe('POST /api/v1/auth/login', () => {
   let funcionarioId: number;
 
   beforeEach(async () => {
-    const criado = await createFuncionario(pool, { nome: 'Rotas Teste', login, senhaHash: await hashPassword(senha) });
+    const criado = await createFuncionario(pool, {
+      nome: 'Rotas Teste',
+      login,
+      senhaHash: await hashPassword(senha),
+    });
     funcionarioId = criado.id;
   });
 
   afterEach(async () => {
-    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [funcionarioId]);
+    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [
+      funcionarioId,
+    ]);
     await pool.query('DELETE FROM funcionarios WHERE login = ?', [login]);
   });
 
@@ -48,7 +54,11 @@ describe('fluxo login -> /api/v1/me -> logout', () => {
   const senha = 'senha-correta-456';
 
   beforeEach(async () => {
-    await createFuncionario(pool, { nome: 'Fluxo Teste', login, senhaHash: await hashPassword(senha) });
+    await createFuncionario(pool, {
+      nome: 'Fluxo Teste',
+      login,
+      senhaHash: await hashPassword(senha),
+    });
   });
 
   afterEach(async () => {
@@ -87,12 +97,18 @@ describe('PATCH /api/v1/me', () => {
   let funcionarioId: number;
 
   beforeEach(async () => {
-    const criado = await createFuncionario(pool, { nome: 'Nome Original', login, senhaHash: await hashPassword(senha) });
+    const criado = await createFuncionario(pool, {
+      nome: 'Nome Original',
+      login,
+      senhaHash: await hashPassword(senha),
+    });
     funcionarioId = criado.id;
   });
 
   afterEach(async () => {
-    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [funcionarioId]);
+    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [
+      funcionarioId,
+    ]);
     await pool.query('DELETE FROM funcionarios WHERE login = ?', [login]);
   });
 
@@ -117,6 +133,25 @@ describe('PATCH /api/v1/me', () => {
     expect(resposta.status).toBe(422);
   });
 
+  test('nome acima do limite do banco retorna 422 e preserva o perfil', async () => {
+    const agent = request.agent(app);
+    await agent.post('/api/v1/auth/login').send({ login, senha });
+    const resposta = await agent.patch('/api/v1/me').send({ nome: 'x'.repeat(121) });
+    expect(resposta.status).toBe(422);
+    expect(resposta.body.error.fields.nome).toBeDefined();
+    expect((await agent.get('/api/v1/me')).body.data.nome).toBe('Nome Original');
+  });
+
+  test('aceita nome no limite e ignora tentativa de editar login', async () => {
+    const agent = request.agent(app);
+    await agent.post('/api/v1/auth/login').send({ login, senha });
+    const nome = 'x'.repeat(120);
+    const resposta = await agent.patch('/api/v1/me').send({ nome, login: 'outro-login' });
+    expect(resposta.status).toBe(200);
+    expect(resposta.body.data).toMatchObject({ nome, login });
+    expect((await agent.get('/api/v1/me')).body.data).toMatchObject({ nome, login });
+  });
+
   test('retorna 401 sem sessão', async () => {
     const resposta = await request(app).patch('/api/v1/me').send({ nome: 'Qualquer' });
 
@@ -130,12 +165,18 @@ describe('PUT /api/v1/me/senha', () => {
   let funcionarioId: number;
 
   beforeEach(async () => {
-    const criado = await createFuncionario(pool, { nome: 'Troca Senha', login, senhaHash: await hashPassword(senha) });
+    const criado = await createFuncionario(pool, {
+      nome: 'Troca Senha',
+      login,
+      senhaHash: await hashPassword(senha),
+    });
     funcionarioId = criado.id;
   });
 
   afterEach(async () => {
-    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [funcionarioId]);
+    await pool.query("DELETE FROM sessoes WHERE JSON_EXTRACT(dados, '$.funcionarioId') = ?", [
+      funcionarioId,
+    ]);
     await pool.query('DELETE FROM funcionarios WHERE login = ?', [login]);
   });
 
@@ -148,7 +189,9 @@ describe('PUT /api/v1/me/senha', () => {
       .send({ senhaAtual: senha, novaSenha: 'senha-nova-456' });
     expect(putResponse.status).toBe(204);
 
-    const loginComSenhaAntiga = await request(app).post('/api/v1/auth/login').send({ login, senha });
+    const loginComSenhaAntiga = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ login, senha });
     expect(loginComSenhaAntiga.status).toBe(401);
 
     const loginComSenhaNova = await request(app)
@@ -161,7 +204,9 @@ describe('PUT /api/v1/me/senha', () => {
     const agent = request.agent(app);
     await agent.post('/api/v1/auth/login').send({ login, senha });
 
-    const resposta = await agent.put('/api/v1/me/senha').send({ senhaAtual: 'errada', novaSenha: 'senha-nova-456' });
+    const resposta = await agent
+      .put('/api/v1/me/senha')
+      .send({ senhaAtual: 'errada', novaSenha: 'senha-nova-456' });
 
     expect(resposta.status).toBe(401);
     expect(resposta.body.error.code).toBe('SENHA_ATUAL_INVALIDA');
@@ -171,7 +216,9 @@ describe('PUT /api/v1/me/senha', () => {
     const agent = request.agent(app);
     await agent.post('/api/v1/auth/login').send({ login, senha });
 
-    const resposta = await agent.put('/api/v1/me/senha').send({ senhaAtual: senha, novaSenha: '123' });
+    const resposta = await agent
+      .put('/api/v1/me/senha')
+      .send({ senhaAtual: senha, novaSenha: '123' });
 
     expect(resposta.status).toBe(422);
   });

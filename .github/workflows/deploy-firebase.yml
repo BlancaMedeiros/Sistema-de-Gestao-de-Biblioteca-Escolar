@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - feat/backend-foundation
+  pull_request:
+    branches:
+      - feat/backend-foundation
   workflow_dispatch:
 
 permissions:
@@ -23,8 +26,30 @@ env:
 
 jobs:
   validar:
-    name: Build do frontend e backend
+    name: Builds e testes completos do backend
     runs-on: ubuntu-latest
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: biblioteca_teste
+      DB_USER: teste
+      DB_PASSWORD: senha-de-teste
+      SESSION_SECRET: sessao-de-teste
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-de-teste
+          MYSQL_DATABASE: biblioteca_teste
+          MYSQL_USER: teste
+          MYSQL_PASSWORD: senha-de-teste
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --protocol=TCP -h 127.0.0.1 -uroot -proot-de-teste --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
     steps:
       - name: Obter código
@@ -45,16 +70,15 @@ jobs:
       - name: Compilar backend
         run: npm run build --prefix backend
 
-      - name: Testar seleção, execução e falhas de migrations
-        # Estes testes não consultam banco real; env.ts exige parâmetros
-        # mesmo nos testes do pool. Nenhum segredo de produção é usado.
-        env:
-          DB_HOST: 127.0.0.1
-          DB_NAME: biblioteca_teste
-          DB_USER: teste
-          DB_PASSWORD: senha-de-teste
-          SESSION_SECRET: sessao-de-teste
-        run: npm test --prefix backend -- src/db/migrations.test.ts src/db/migrate-controle.test.ts src/db/run-migrations-cli.test.ts src/config/database.test.ts
+      - name: Aplicar migrations no MySQL de teste
+        run: npm run migrate --prefix backend
+
+      - name: Testar backend completo contra MySQL de teste
+        # Banco descartável do job; nenhum segredo de produção é usado.
+        run: npm test --prefix backend
+
+      - name: Executar QAT por HTTP real com reinício da API
+        run: node backend/scripts/qat-http.mjs
 
       - name: Instalar dependências do frontend
         run: npm ci --prefix frontend

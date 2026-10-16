@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "qat:http": "npm run build && node scripts/qat-http.mjs",
     "migrate": "tsx src/db/run-migrations-cli.ts",
     "migrate:aiven": "tsx src/db/run-migrations-aiven-cli.ts",
     "funcionario:criar": "tsx src/db/run-criar-funcionario-cli.ts",

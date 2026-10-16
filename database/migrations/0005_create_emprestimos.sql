@@ -1,0 +1,23 @@
+CREATE TABLE emprestimos (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  livro_id INT UNSIGNED NOT NULL,
+  usuario_id INT UNSIGNED NOT NULL,
+  funcionario_id INT UNSIGNED NOT NULL,
+  data_emprestimo DATE NOT NULL,
+  devolucao_prevista DATE NOT NULL,
+  devolucao_real DATE NULL,
+  devolvido_por INT UNSIGNED NULL,
+  quantidade_renovacoes TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_emprestimos_livro FOREIGN KEY (livro_id) REFERENCES livros(id),
+  CONSTRAINT fk_emprestimos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+  CONSTRAINT fk_emprestimos_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id),
+  CONSTRAINT fk_emprestimos_devolvido_por FOREIGN KEY (devolvido_por) REFERENCES funcionarios(id),
+  CONSTRAINT ck_emprestimos_datas CHECK (devolucao_prevista >= data_emprestimo AND (devolucao_real IS NULL OR devolucao_real >= data_emprestimo)),
+  CONSTRAINT ck_emprestimos_renovacoes CHECK (quantidade_renovacoes <= 2),
+  INDEX idx_emprestimos_livro_aberto (livro_id, devolucao_real),
+  INDEX idx_emprestimos_usuario_aberto (usuario_id, devolucao_real, devolucao_prevista),
+  INDEX idx_emprestimos_vencimento (devolucao_real, devolucao_prevista),
+  INDEX idx_emprestimos_criacao (criado_em, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -1,4 +1,5 @@
 import type { Pool, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
+import type { Banco } from '../../db/transacao.js';
 
 export interface FuncionarioRow extends RowDataPacket {
   id: number;
@@ -8,7 +9,7 @@ export interface FuncionarioRow extends RowDataPacket {
   ativo: number;
 }
 
-export async function findFuncionarioById(pool: Pool, id: number): Promise<FuncionarioRow | null> {
+export async function findFuncionarioById(pool: Banco, id: number): Promise<FuncionarioRow | null> {
   const [rows] = await pool.query<FuncionarioRow[]>(
     'SELECT id, nome, login, senha_hash, ativo FROM funcionarios WHERE id = ? LIMIT 1',
     [id],
@@ -17,7 +18,10 @@ export async function findFuncionarioById(pool: Pool, id: number): Promise<Funci
   return rows[0] ?? null;
 }
 
-export async function findFuncionarioByLogin(pool: Pool, login: string): Promise<FuncionarioRow | null> {
+export async function findFuncionarioByLogin(
+  pool: Pool,
+  login: string,
+): Promise<FuncionarioRow | null> {
   const [rows] = await pool.query<FuncionarioRow[]>(
     'SELECT id, nome, login, senha_hash, ativo FROM funcionarios WHERE login = ? LIMIT 1',
     [login],
@@ -27,12 +31,26 @@ export async function findFuncionarioByLogin(pool: Pool, login: string): Promise
 }
 
 export async function createFuncionario(
-  pool: Pool,
-  dados: { nome: string; login: string; senhaHash: string },
+  pool: Banco,
+  dados: {
+    nome: string;
+    login: string;
+    senhaHash: string;
+    email?: string | null;
+    telefone?: string | null;
+    usuarioId?: number | null;
+  },
 ): Promise<FuncionarioRow> {
   const [resultado] = await pool.query<ResultSetHeader>(
-    'INSERT INTO funcionarios (nome, login, senha_hash) VALUES (?, ?, ?)',
-    [dados.nome, dados.login, dados.senhaHash],
+    'INSERT INTO funcionarios (nome, login, senha_hash, email, telefone, usuario_id) VALUES (?, ?, ?, ?, ?, ?)',
+    [
+      dados.nome,
+      dados.login,
+      dados.senhaHash,
+      dados.email ?? null,
+      dados.telefone ?? null,
+      dados.usuarioId ?? null,
+    ],
   );
 
   const criado = await findFuncionarioById(pool, resultado.insertId);
@@ -44,7 +62,11 @@ export async function createFuncionario(
   return criado;
 }
 
-export async function updateFuncionarioNome(pool: Pool, id: number, nome: string): Promise<FuncionarioRow> {
+export async function updateFuncionarioNome(
+  pool: Pool,
+  id: number,
+  nome: string,
+): Promise<FuncionarioRow> {
   await pool.query('UPDATE funcionarios SET nome = ? WHERE id = ?', [nome, id]);
 
   const atualizado = await findFuncionarioById(pool, id);
@@ -56,6 +78,10 @@ export async function updateFuncionarioNome(pool: Pool, id: number, nome: string
   return atualizado;
 }
 
-export async function updateFuncionarioSenha(pool: Pool, id: number, senhaHash: string): Promise<void> {
+export async function updateFuncionarioSenha(
+  pool: Pool,
+  id: number,
+  senhaHash: string,
+): Promise<void> {
   await pool.query('UPDATE funcionarios SET senha_hash = ? WHERE id = ?', [senhaHash, id]);
 }
