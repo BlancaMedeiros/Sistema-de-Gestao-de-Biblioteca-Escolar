@@ -6,6 +6,8 @@ Monorepo do Projeto Integrador II, com frontend Angular, backend Express + TypeS
 
 Para homologar as APIs antes de entregar à Bianca, use o [checklist de aceite do backend](docs/qat-aceite-backend.md): versão testada, 23 operações, regras de negócio, evidências, defeitos e material de integração.
 
+Para executar os testes manualmente pelo Swagger, siga o [guia sequencial das 23 operações](docs/guia-teste-manual-endpoints.md): dados da rodada, login, cadastros, perfil, empréstimos, filtros, renovação, devolução, indicadores e encerramento, com respostas e efeitos esperados.
+
 **QAT atualizado em 16/10:** 236 testes em 24 arquivos passaram em cada banco local (MySQL/TiDB), mais 36 cenários HTTP com reinício real e instalação do zero das nove migrations. Inclui Meu Perfil completo e localização nos empréstimos. Veja o [resultado e correções](docs/qat-resultado-2026-10-16-frontend.md), o [contrato para as telas](docs/specs/2026-10-16-aderencia-frontend.md) e o [guia de integração para Bianca](docs/entrega-backend-bianca.md). Aprovação para integração local; publicação e aceite das telas permanecem etapas separadas.
 
 ## Pré-requisitos

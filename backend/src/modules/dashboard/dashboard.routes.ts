@@ -15,7 +15,7 @@ export const dashboardRouter = Router();
  * /dashboard:
  *   get:
  *     summary: Métricas persistentes, quatro empréstimos recentes e até vinte devoluções previstas para hoje.
- *     description: As consultas usam o mesmo snapshot. Empréstimos ativos incluem atrasados; totalAcervo soma unidades de títulos ativos, inclusive em manutenção.
+ *     description: As consultas usam o mesmo snapshot e data de São Paulo. totalAcervo soma unidades de títulos ativos, inclusive em manutenção; usuariosAtivos conta leitores. emprestimosAtivos inclui atrasados; devolucoesPendentes conta somente atrasados. metricas.devolucoesHoje é o total e devolucoesHoje é uma lista de até vinte. Para consultar todos os vencimentos de hoje, use o relatório com as duas datas iguais a dataReferencia.
  *     tags: [Dashboard]
  *     security: [{ sessao: [] }]
  *     responses:
@@ -31,13 +31,14 @@ export const dashboardRouter = Router();
  * /relatorios/pendencias:
  *   get:
  *     summary: Relatório paginado de empréstimos abertos, com filtro opcional de atrasos e vencimento.
+ *     description: Por padrão inclui todos os abertos, tanto em dia quanto atrasados. Use status Atrasado para somente atrasos; Devolvido retorna 422. Para um dia específico, use a mesma data em vencimentoDe e vencimentoAte. Após uma devolução, o registro sai deste relatório e permanece no histórico.
  *     tags: [Relatórios]
  *     security: [{ sessao: [] }]
  *     parameters:
  *       - { $ref: '#/components/parameters/BuscaMovimentacao' }
  *       - { $ref: '#/components/parameters/UsuarioFiltro' }
  *       - { $ref: '#/components/parameters/LivroFiltro' }
- *       - { in: query, name: status, schema: { type: string, enum: [Abertos, Atrasado, Em Andamento], default: Abertos } }
+ *       - { in: query, name: status, description: 'Somente abertos. Devolvido não é aceito neste relatório.', schema: { type: string, enum: [Abertos, Atrasado, Em Andamento], default: Abertos, example: Abertos } }
  *       - { $ref: '#/components/parameters/VencimentoDe' }
  *       - { $ref: '#/components/parameters/VencimentoAte' }
  *       - { $ref: '#/components/parameters/Page' }

@@ -19,6 +19,7 @@ const cadastroSchema = z.object({
  * /funcionarios:
  *   post:
  *     summary: Funcionário autenticado cadastra outro funcionário com o mesmo nível de acesso.
+ *     description: Cria conta para entrar no sistema, com ID gerado pelo backend. Login é o nome de acesso único; senha é o segredo, com mínimo de oito caracteres. Escolha cadastro mínimo ou com contatos; ambos dispensam vínculo com leitor. Após criar, use POST /auth/login para entrar com a nova conta. O cadastro não troca a sessão atual.
  *     tags: [Funcionários]
  *     security: [{ sessao: [] }]
  *     requestBody:
@@ -26,6 +27,9 @@ const cadastroSchema = z.object({
  *       content:
  *         application/json:
  *           schema: { $ref: '#/components/schemas/FuncionarioEntrada' }
+ *           examples:
+ *             minimo: { $ref: '#/components/examples/FuncionarioMinimo' }
+ *             comContatos: { $ref: '#/components/examples/FuncionarioCompleto' }
  *     responses:
  *       201:
  *         description: Conta criada; nunca retorna senha ou hash.
@@ -36,8 +40,8 @@ const cadastroSchema = z.object({
  *               properties:
  *                 data: { $ref: '#/components/schemas/FuncionarioPerfil' }
  *       401: { $ref: '#/components/responses/SemSessao' }
- *       404: { $ref: '#/components/responses/NaoEncontrado' }
- *       409: { $ref: '#/components/responses/ConflitoNegocio' }
+ *       404: { $ref: '#/components/responses/UsuarioNaoEncontrado' }
+ *       409: { $ref: '#/components/responses/CadastroFuncionarioConflito' }
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  */
 funcionariosRouter.post('/funcionarios', requireAuth, async (request, response, next) => {

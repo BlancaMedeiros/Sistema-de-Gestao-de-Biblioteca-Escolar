@@ -61,6 +61,7 @@ function lerChave(valor: string | undefined): string {
  * /emprestimos:
  *   get:
  *     summary: Lista empréstimos; atraso é calculado pela data atual de São Paulo.
+ *     description: Ordena pelos mais recentes por criação/ID. Sem status, inclui devolvidos; Abertos inclui em dia e atrasados. Combine filtros e percorra pagination.total. As datas de vencimento são inclusivas.
  *     tags: [Empréstimos]
  *     security: [{ sessao: [] }]
  *     parameters:
@@ -78,6 +79,7 @@ function lerChave(valor: string | undefined): string {
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  *   post:
  *     summary: Empresta uma unidade; prazo de 7 dias e máximo de 3 empréstimos abertos por leitor sem atrasos.
+ *     description: Primeiro cadastre/consulte livro e leitor ativos. Substitua os IDs do exemplo pelos reais e gere uma Idempotency-Key nova. Servidor define hoje, prazo de sete dias, funcionário da sessão e saldo. Estoque, limite ou atraso podem retornar 409 sem efetivar a operação.
  *     tags: [Empréstimos]
  *     security: [{ sessao: [] }]
  *     parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
@@ -86,6 +88,8 @@ function lerChave(valor: string | undefined): string {
  *       content:
  *         application/json:
  *           schema: { $ref: '#/components/schemas/EmprestimoEntrada' }
+ *           examples:
+ *             emprestar: { $ref: '#/components/examples/EmprestimoCadastro' }
  *     responses:
  *       201: { $ref: '#/components/responses/EmprestimoEncontrado' }
  *       401: { $ref: '#/components/responses/SemSessao' }
@@ -134,9 +138,10 @@ emprestimosRouter.post('/emprestimos', async (request, response, next) => {
  * /emprestimos/{id}:
  *   get:
  *     summary: Consulta um empréstimo e seu status atual.
+ *     description: Use para reler o estado depois de uma escrita ou retentativa. Status considera o dia atual de São Paulo; nomes e localização refletem os cadastros atuais, inclusive após inativação do livro.
  *     tags: [Empréstimos]
  *     security: [{ sessao: [] }]
- *     parameters: [{ $ref: '#/components/parameters/RecursoId' }]
+ *     parameters: [{ $ref: '#/components/parameters/EmprestimoId' }]
  *     responses:
  *       200: { $ref: '#/components/responses/EmprestimoEncontrado' }
  *       401: { $ref: '#/components/responses/SemSessao' }
@@ -144,26 +149,42 @@ emprestimosRouter.post('/emprestimos', async (request, response, next) => {
  * /emprestimos/{id}/renovacoes:
  *   post:
  *     summary: Renova por mais 7 dias sobre o prazo atual, até duas vezes; leitor não pode ter atrasos.
+ *     description: Informe o ID do empréstimo no caminho e chave nova no header. Corpo pode ser omitido ou {}. Não envie dias ou datas. O prazo cresce sobre o vencimento anterior; repetir a mesma chave retorna o corpo original sem outra renovação. Consulte GET para o estado atual.
  *     tags: [Empréstimos]
  *     security: [{ sessao: [] }]
- *     parameters: [{ $ref: '#/components/parameters/RecursoId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+ *     parameters: [{ $ref: '#/components/parameters/EmprestimoId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/AcaoEmprestimo' }
+ *           examples:
+ *             semCampos: { $ref: '#/components/examples/AcaoEmprestimo' }
  *     responses:
- *       200: { $ref: '#/components/responses/EmprestimoEncontrado' }
+ *       200: { $ref: '#/components/responses/EmprestimoRenovado' }
  *       401: { $ref: '#/components/responses/SemSessao' }
  *       404: { $ref: '#/components/responses/NaoEncontrado' }
- *       409: { $ref: '#/components/responses/ConflitoNegocio' }
+ *       409: { $ref: '#/components/responses/RenovacaoConflito' }
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  * /emprestimos/{id}/devolucao:
  *   post:
  *     summary: Devolve na data atual de São Paulo; aceita atrasados e preserva o histórico.
+ *     description: Informe ID no caminho e chave nova no header. Corpo pode ser omitido ou {}. O servidor registra data/operador e recompõe uma unidade. Repetir a chave original retorna o mesmo 200; tentar devolver novamente com chave diferente retorna 409 EMPRESTIMO_DEVOLVIDO.
  *     tags: [Empréstimos]
  *     security: [{ sessao: [] }]
- *     parameters: [{ $ref: '#/components/parameters/RecursoId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+ *     parameters: [{ $ref: '#/components/parameters/EmprestimoId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema: { $ref: '#/components/schemas/AcaoEmprestimo' }
+ *           examples:
+ *             semCampos: { $ref: '#/components/examples/AcaoEmprestimo' }
  *     responses:
- *       200: { $ref: '#/components/responses/EmprestimoEncontrado' }
+ *       200: { $ref: '#/components/responses/EmprestimoDevolvido' }
  *       401: { $ref: '#/components/responses/SemSessao' }
  *       404: { $ref: '#/components/responses/NaoEncontrado' }
- *       409: { $ref: '#/components/responses/ConflitoNegocio' }
+ *       409: { $ref: '#/components/responses/DevolucaoConflito' }
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  */
 emprestimosRouter.get('/emprestimos/:id', async (request, response, next) => {
@@ -206,10 +227,11 @@ for (const [caminho, executar] of [
  * /usuarios/{id}/emprestimos:
  *   get:
  *     summary: Histórico paginado do leitor, inclusive inativo, com resumo de abertos e atrasados.
+ *     description: Inclui devolvidos e preserva histórico de livros/leitores inativos. pagination.total considera os filtros; resumo sempre considera todos os empréstimos desse leitor, não apenas a página/filtro. Use o ID do leitor no caminho, não o da conta de funcionário.
  *     tags: [Leitores]
  *     security: [{ sessao: [] }]
  *     parameters:
- *       - { $ref: '#/components/parameters/RecursoId' }
+ *       - { $ref: '#/components/parameters/UsuarioId' }
  *       - { $ref: '#/components/parameters/StatusEmprestimo' }
  *       - { $ref: '#/components/parameters/VencimentoDe' }
  *       - { $ref: '#/components/parameters/VencimentoAte' }
@@ -218,7 +240,7 @@ for (const [caminho, executar] of [
  *     responses:
  *       200: { $ref: '#/components/responses/HistoricoUsuario' }
  *       401: { $ref: '#/components/responses/SemSessao' }
- *       404: { $ref: '#/components/responses/NaoEncontrado' }
+ *       404: { $ref: '#/components/responses/UsuarioNaoEncontrado' }
  *       422: { $ref: '#/components/responses/DadosInvalidos' }
  */
 emprestimosRouter.get('/usuarios/:id/emprestimos', requireAuth, async (request, response, next) => {

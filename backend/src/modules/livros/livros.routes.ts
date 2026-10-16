@@ -123,13 +123,14 @@ function responderConflito(response: Response, erro: unknown): boolean {
  * /livros:
  *   get:
  *     summary: Lista livros ativos, ordenados por título, com busca opcional.
+ *     description: Retorna todos os resultados em data, sem paginação. Não inclui livros inativos. Disponibilidade desconta manutenção e empréstimos abertos; use o ID retornado no cadastro de empréstimo.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]
  *     parameters:
  *       - in: query
  *         name: busca
  *         description: Texto literal em título, autor, ISBN, estante ou prateleira. Ignora caixa e acentos.
- *         schema: { type: string, maxLength: 100 }
+ *         schema: { type: string, maxLength: 100, example: Pequeno Príncipe }
  *     responses:
  *       200:
  *         description: Lista sem paginação, com disponibilidade calculada.
@@ -194,6 +195,7 @@ livrosRouter.get('/livros/:id', async (request, response, next) => {
  * /livros:
  *   post:
  *     summary: Cadastra um livro; ISBN é opcional e único, mesmo entre inativos.
+ *     description: O backend gera ID, calcula quantidadeDisponivel e status. Escolha cadastro mínimo sem ISBN para começar ou completo com localização/manutenção. Guarde data.id; não envie ID ou saldo. Repetir um ISBN, mesmo em livro inativo, retorna 409.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]
  *     requestBody:
@@ -201,6 +203,9 @@ livrosRouter.get('/livros/:id', async (request, response, next) => {
  *       content:
  *         application/json:
  *           schema: { $ref: '#/components/schemas/LivroCadastro' }
+ *           examples:
+ *             minimo: { $ref: '#/components/examples/LivroMinimo' }
+ *             completo: { $ref: '#/components/examples/LivroCompleto' }
  *     responses:
  *       201:
  *         description: Livro criado.
@@ -241,6 +246,7 @@ livrosRouter.post('/livros', async (request, response, next) => {
  * /livros/{id}:
  *   patch:
  *     summary: Edita apenas os campos enviados, validando as quantidades finais.
+ *     description: Campos omitidos são preservados; null apaga opcionais. Total deve comportar unidades em manutenção e emprestadas. Saldo/status são calculados pelo servidor. Alterar localização também atualiza a localização nas consultas dos empréstimos.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]
  *     parameters: [{ $ref: '#/components/parameters/LivroId' }]
@@ -249,6 +255,9 @@ livrosRouter.post('/livros', async (request, response, next) => {
  *       content:
  *         application/json:
  *           schema: { $ref: '#/components/schemas/LivroEdicao' }
+ *           examples:
+ *             localizacao: { $ref: '#/components/examples/LivroEdicao' }
+ *             estoque: { $ref: '#/components/examples/LivroEstoque' }
  *     responses:
  *       200: { $ref: '#/components/responses/LivroEncontrado' }
  *       401: { $ref: '#/components/responses/SemSessao' }
@@ -292,6 +301,7 @@ livrosRouter.patch('/livros/:id', async (request, response, next) => {
  * /livros/{id}:
  *   delete:
  *     summary: Inativa livro sem empréstimos abertos, preservando histórico e reserva do ISBN.
+ *     description: Exige todas as devoluções concluídas, senão retorna 409. Sucesso retorna 204 sem JSON; GET e nova exclusão desse ID passam a retornar 404. A operação é lógica e não apaga os empréstimos anteriores.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]
  *     parameters: [{ $ref: '#/components/parameters/LivroId' }]
@@ -299,7 +309,7 @@ livrosRouter.patch('/livros/:id', async (request, response, next) => {
  *       204: { description: Livro inativado, sem corpo de resposta. }
  *       401: { $ref: '#/components/responses/SemSessao' }
  *       404: { $ref: '#/components/responses/LivroNaoEncontrado' }
- *       409: { $ref: '#/components/responses/ConflitoNegocio' }
+ *       409: { $ref: '#/components/responses/LivroComEmprestimos' }
  */
 livrosRouter.delete('/livros/:id', async (request, response, next) => {
   const id = lerId(request.params.id);

@@ -18,6 +18,8 @@ Para esta entrega, o aceite é **do backend para integração local**. O aceite 
 
 ## 1. Preparar uma rodada
 
+Para executar a rodada em uma sequência única pelo Swagger, use o [guia de teste manual de todos os endpoints](guia-teste-manual-endpoints.md). Ele reutiliza os IDs API-01–23 deste checklist e organiza os dados e dependências dos cenários.
+
 Preencha antes de começar:
 
 ```text
