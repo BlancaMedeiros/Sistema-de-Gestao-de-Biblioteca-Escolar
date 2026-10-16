@@ -2,6 +2,8 @@
 
 **Estado em 15/10/2026:** todas as operações do mapa de endpoints estão implementadas e testadas localmente: autenticação/perfil, funcionários, livros, leitores, empréstimos/renovações/devoluções, dashboard e pendências. As novas APIs ainda não foram publicadas nem integradas às telas. Consulte o [contrato completo](specs/2026-10-15-apis-restantes-design.md), o [QAT](qat-e-proximos-passos.md) e o [índice histórico do workspace](../../relatorios/00-leia-primeiro.markdown).
 
+**Revisão de 16/10:** [perfil completo e localização nos empréstimos](specs/2026-10-16-aderencia-frontend.md), com [QAT atualizado](qat-resultado-2026-10-16-frontend.md). Contas podem ter um vínculo explícito e exclusivo com leitor, sem mudar o nível de acesso.
+
 ## Decisões confirmadas
 
 - Monorepo com Angular em `frontend/`, Express + TypeScript em `backend/` e scripts SQL em `database/`.
@@ -75,7 +77,7 @@ Use strings entre aspas **simples**, consultas parametrizadas e chave primária 
 
 ## Autenticação (primeira fatia implementada)
 
-- `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me` (só o campo `nome` por enquanto) e `PUT /api/v1/me/senha`, cobertos por testes de integração (`backend/src/modules/auth/*.test.ts`) contra o MySQL real.
+- `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/me`, `PATCH /api/v1/me` (nome, contatos e vínculo explícito com leitor) e `PUT /api/v1/me/senha`, cobertos por testes de integração (`backend/src/modules/auth/*.test.ts`) contra MySQL/TiDB locais. O perfil inclui matrícula e contadores do leitor vinculado; sem vínculo, matrícula nula e contadores zero. Não existe correspondência automática por IDs. As migrations 0008/0009 acrescentam os campos e a unicidade/FK sem preencher dados fictícios.
 - Trocar a senha (`PUT /me/senha`) invalida as demais sessões do funcionário (`destroyOtherSessions`, em `session-store.ts`) — a sessão atual continua válida, para não forçar um novo login imediato após uma troca legítima.
 - Um único papel — "funcionário autorizado" — sem distinção ADMIN/OPERADOR por enquanto, para reduzir escopo desta fatia. Tabela `funcionarios` (login único, hash Argon2id da senha).
 - `POST /api/v1/funcionarios` agora permite ao funcionário autenticado e ativo cadastrar outro com o mesmo acesso. O middleware também verifica a atividade da conta antes de aceitar uma sessão existente. Cadastro de leitores permanece separado e não cria conta.
@@ -96,7 +98,7 @@ Cada rota implementada ganha um bloco `@openapi` em JSDoc acima do handler, em `
 
 ## Próximas decisões e entregas
 
-1. ~~Versionar migrations~~ — 0001–0007 para autenticação, livros, leitores, empréstimos, renovações e idempotência. Modelo de livros por quantidade, sem exemplares individuais.
+1. ~~Versionar migrations~~ — 0001–0009 para autenticação/perfil, livros, leitores, empréstimos, renovações, idempotência e vínculo explícito de perfil. Modelo de livros por quantidade, sem exemplares individuais.
 2. ~~Definir o contrato OpenAPI e disponibilizar Swagger UI~~ — feito, crescendo por rota.
 3. ~~Implementar APIs de leitores, empréstimos e dashboard persistente~~ — feito e testado localmente; falta integrar as telas e publicar após revisão.
 4. Substituir os mocks Angular por serviços HTTP. Login já chama a API; concluir sessão/perfil/logout e integrar acervo.

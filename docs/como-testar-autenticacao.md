@@ -1,6 +1,6 @@
 # Como testar autenticação, perfil e funcionários
 
-**Roteiro atualizado em 16/10/2026. Execução manual pendente.** Cobre as seis operações de acesso e perfil do [checklist de aceite](qat-aceite-backend.md). As outras APIs também existem localmente: consulte o [QAT completo](qat-e-proximos-passos.md) e o [contrato](specs/2026-10-15-apis-restantes-design.md). As evidências automatizadas de 15/10 estão no QAT; não constituem execução manual deste roteiro.
+**Roteiro atualizado em 16/10/2026.** Cobre as seis operações de acesso e perfil do [checklist de aceite](qat-aceite-backend.md). O [QAT atualizado](qat-resultado-2026-10-16-frontend.md) comprova estes contratos por HTTP real automatizado e regressão. A prova visual anterior do Swagger está no relatório histórico; não se afirma nova execução manual de todos os passos. Consulte também o [contrato](specs/2026-10-15-apis-restantes-design.md).
 
 ## 1. Preparar o ambiente e a conta da rodada
 
@@ -38,7 +38,7 @@ Em cada operação, expanda **Try it out**, preencha os campos e clique em **Exe
 | 3     | Login válido com senha errada                                   | 401 `CREDENCIAIS_INVALIDAS`                                |
 | 4     | Login com uma conta local acessível                             | 200, dados do funcionário sem senha/hash; cookie de sessão |
 | 5     | `GET /me`                                                       | 200 com os dados da conta autenticada                      |
-| 6     | `POST /funcionarios` com os dados exclusivos da rodada          | 201, ID/nome/login; sem senha/hash                         |
+| 6     | `POST /funcionarios` com os dados exclusivos da rodada          | 201, perfil completo; sem senha/hash                      |
 | 7     | Repetir o cadastro com o mesmo login                            | 409 `LOGIN_DUPLICADO`; conta original preservada           |
 | 8     | Tentar cadastro com nome vazio, login com espaço ou senha curta | 422, sem cadastro parcial                                  |
 | 9     | `POST /auth/logout`                                             | 204, sem corpo                                             |
@@ -48,6 +48,15 @@ Em cada operação, expanda **Try it out**, preencha os campos e clique em **Exe
 ## 3. Perfil e troca de senha da conta exclusiva
 
 Com a conta `qat.…` autenticada:
+
+Antes da troca de senha, confira também os contatos e o vínculo opcional:
+
+- `GET /me`: dez campos do [perfil completo](specs/2026-10-16-aderencia-frontend.md). Conta sem leitor associado tem `usuarioId`/`matricula` nulos e os dois contadores zero.
+- `PATCH /me` com `{"email":"qat@example.test","telefone":"(11) 90000-0000"}`: 200; GET e novo login preservam contatos. Email inválido ou telefone acima de 30 caracteres dá 422 sem alteração. Null/texto vazio apaga contato.
+- Cadastre um leitor exclusivo da rodada e use seu ID em `{"usuarioId":81}` (substitua 81 pelo ID retornado): matrícula vem desse cadastro. IDs iguais entre tabelas não vinculam a conta automaticamente. Conta e leitor mantêm contatos independentes.
+- Uma segunda conta tentando o mesmo leitor deve receber 409 `LEITOR_JA_VINCULADO`; ID inexistente dá 404 `USUARIO_NAO_ENCONTRADO`. Campos enviados juntos não são gravados quando o vínculo é recusado.
+- Empreste um livro ao leitor associado: ativos e histórico sobem; devolver reduz ativos e mantém histórico. `usuarioId:null` remove associação sem apagar histórico, retornando matrícula nula/contadores zero.
+- Cargo, matrícula, login e contadores são somente leitura. `novaSenha` sozinha em PATCH dá 422; não substitui a rota de senha abaixo.
 
 1. `PATCH /me` com `{"nome":"Funcionária QAT Renomeada"}`: 200. `GET /me` deve refletir o nome e manter o login original.
 2. PATCH com `{"nome":""}` e depois `{}`: 422, sem alterar o nome. Login enviado junto de um nome válido não altera o login.

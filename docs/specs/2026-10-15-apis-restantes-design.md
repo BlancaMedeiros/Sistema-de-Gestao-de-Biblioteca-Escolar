@@ -4,6 +4,8 @@
 
 **Revisão de 16/10:** [QAT aprovado para integração local](../qat-resultado-2026-10-16.md). `PATCH /me` aceita nome de 1 a 120 caracteres após aparar espaços e devolve 422 acima do limite. Charset/compactação de conteúdo não suportados devolvem 415 estruturado; as respostas 413 e 500 genérico têm testes explícitos.
 
+**Revisão de compatibilidade com as telas, também em 16/10:** perfil completo com contatos, vínculo explícito com leitor e indicadores pessoais; localização e nomes de exibição nos empréstimos. Veja o [contrato dessas alterações](2026-10-16-aderencia-frontend.md) e o [QAT atualizado](../qat-resultado-2026-10-16-frontend.md).
+
 ## Escopo e regras confirmadas
 
 - Uma biblioteca, controlada por quantidade, sem exemplares físicos individuais.
@@ -35,9 +37,17 @@ Listagens de leitores, empréstimos, histórico e relatório aceitam `page` (pad
 { "nome": "Funcionária de demonstração", "login": "funcionaria.demo", "senha": "EscolhaUmaSenha" }
 ```
 
-Nome até 120 caracteres; login até 60, sem espaços; senha de 8 a 1024 caracteres. Resposta **201** com `id`, `nome`, `login`, sem senha/hash. Login repetido dá **409 `LOGIN_DUPLICADO`**, sem modificar a conta. Campos `papel`/`admin` não concedem acesso diferente. A primeira conta continua podendo ser provisionada pelo comando local já existente.
+Nome até 120 caracteres; login até 60, sem espaços; senha de 8 a 1024 caracteres. Contatos `email`/`telefone` e vínculo `usuarioId` são opcionais. Resposta **201** com o perfil completo descrito abaixo, sem senha/hash. Login repetido dá **409 `LOGIN_DUPLICADO`**, sem modificar a conta. Vínculo inexistente dá 404; leitor já vinculado a outra conta dá 409 `LEITOR_JA_VINCULADO`, sem cadastro parcial. Campos `papel`/`admin` não concedem acesso diferente. A primeira conta continua podendo ser provisionada pelo comando local já existente.
 
 O middleware verifica se o funcionário da sessão ainda existe e está ativo. Conta inativada perde a sessão e recebe 401 nas APIs protegidas.
+
+## Meu Perfil
+
+Login, `GET /me`, `PATCH /me` e criação de funcionário retornam `data: { id, nome, login, email, telefone, usuarioId, matricula, cargo, emprestimosAtivos, historicoTotal }`. Contatos e IDs de vínculo/matrícula podem ser `null`; `cargo` é sempre `Funcionário autorizado`. Os contadores pertencem ao leitor explicitamente vinculado, não aos empréstimos operados pelo funcionário; sem vínculo, são zero. `historicoTotal` conta empréstimos, sem comprovar leitura.
+
+`PATCH /me` aceita ao menos um entre `nome`, `email`, `telefone`, `usuarioId`. Omitidos são preservados, contato vazio/null é apagado, vínculo null é removido sem apagar o leitor ou histórico. Nome tem 1–120 caracteres, email válido até 254 e telefone até 30. Uma conta tem no máximo um leitor e um leitor tem no máximo uma conta; não existe associação implícita por IDs iguais ou contatos semelhantes. `matricula` vem de `/usuarios`; `cargo`, login e contadores não são editáveis por `/me`. Contatos da conta não alteram os contatos do leitor. Detalhes e exemplos no [contrato para as telas](2026-10-16-aderencia-frontend.md).
+
+Senha continua em `PUT /me/senha` com `senhaAtual` e `novaSenha` de pelo menos oito caracteres. O PATCH de perfil não troca senha. Permanece a invalidação das demais sessões após troca bem-sucedida.
 
 ## Leitores
 
@@ -84,8 +94,13 @@ DTO retornado:
     "id": 1,
     "livroId": 1,
     "livroTitulo": "Livro de teste",
+    "livro": "Livro de teste",
+    "livroEstante": "E1",
+    "livroPrateleira": "P2",
+    "livroLocalizacao": "E1 - P2",
     "usuarioId": 1,
     "usuarioNome": "Leitora de teste",
+    "usuario": "Leitora de teste",
     "funcionarioId": 1,
     "dataEmprestimo": "2026-10-15",
     "devolucaoPrevista": "2026-10-22",
@@ -99,6 +114,8 @@ DTO retornado:
 
 IDs/datas do exemplo são ilustrativos. Erros 404 indicam referência inexistente/ID inválido. Conflitos 409: `USUARIO_INATIVO`, `LIVRO_INATIVO`, `LIVRO_INDISPONIVEL`, `USUARIO_COM_ATRASOS`, `LIMITE_EMPRESTIMOS`, `LIMITE_RENOVACOES`, `EMPRESTIMO_DEVOLVIDO`, `CHAVE_IDEMPOTENCIA_REUTILIZADA`. Entradas ou header inválidos dão 422.
 
+Nomes de exibição `livro`/`usuario` equivalem a `livroTitulo`/`usuarioNome`. Localização faz parte de todos os DTOs de empréstimo, inclusive dashboard, pendências e histórico de livro inativo. Reflete o cadastro atual, sem depender de buscar o livro no acervo ativo. Partes ausentes usam `S/E`/`S/P`; ambas ausentes dão `Não informada`, com campos separados nulos. A resposta idempotente repetida conserva o corpo original; usar GET para os campos e localização atuais.
+
 ### Retentativas e concorrência
 
 Uma intenção nova recebe uma chave nova; uma retentativa reaproveita a mesma chave e os mesmos dados. A chave tem de 1 a 100 caracteres ASCII entre letras, números, `.`, `_`, `:`, `-`; UUID é uma opção. Diferencia maiúsculas de minúsculas.
@@ -107,7 +124,7 @@ O registro é único por funcionário, operação/recurso e chave. Efeito, hist�
 
 A resposta reapresentada é a original: para obter o estado atual após outra movimentação ou passagem de dias, usar GET. Uma devolução repetida com **chave diferente** é nova intenção e recebe 409; com a chave original, recebe o mesmo 200.
 
-As escritas bloqueiam os registros na ordem leitor → livro → empréstimo, com isolamento READ COMMITTED, para validar os dados após adquirir os locks. Isso protege tanto a última unidade quanto o limite de três empréstimos em livros diferentes. Edição/inativação de livros e leitores participam do mesmo controle. Leituras de listagens/indicadores usam um snapshot consistente.
+Após os locks de idempotência/FK do funcionário, as movimentações bloqueiam leitor → livro → empréstimo, com isolamento READ COMMITTED, para validar os dados após adquirir os locks. Isso protege tanto a última unidade quanto o limite de três empréstimos em livros diferentes. Edição/inativação de livros e leitores participam do mesmo controle. O PATCH do perfil bloqueia funcionário antes de validar o leitor, respeitando a ordem implícita da FK de idempotência para evitar deadlock com empréstimos do mesmo operador. Leituras de listagens/indicadores usam um snapshot consistente.
 
 ## Dashboard e pendências
 
@@ -127,7 +144,9 @@ As escritas bloqueiam os registros na ordem leitor → livro → empréstimo, co
 
 ## Banco, erros e limites da entrega
 
-Migrations novas, um DDL por arquivo: 0004 usuários, 0005 empréstimos, 0006 renovações, 0007 idempotência. Chaves estrangeiras preservam histórico. Não foi alterada uma migration já aplicada para evoluir o schema.
+Migrations novas, um DDL por arquivo: 0004 usuários, 0005 empréstimos, 0006 renovações, 0007 idempotência. Chaves estrangeiras preservam histórico; as migrations publicadas foram preservadas para evoluir o schema por arquivos novos.
+
+A revisão para o frontend acrescenta 0008 (contatos e coluna de vínculo) e 0009 (unicidade/FK do vínculo), mantendo as migrations publicadas 0001–0007 intactas. A separação foi validada em instalação do zero e upgrade no MySQL/TiDB locais.
 
 Dados de teste e transações foram verificados em MySQL 8.4 e TiDB v8.5.3 locais. No TiDB descartável, `tidb_enable_check_constraint` foi habilitado para testar a barreira CHECK; a configuração do TiDB Cloud permanece sem nova verificação/alteração nesta entrega. A API aplica as regras independentemente do CHECK. [Condição de ativação documentada pelo TiDB](https://docs.pingcap.com/tidb/stable/constraints/#check).
 

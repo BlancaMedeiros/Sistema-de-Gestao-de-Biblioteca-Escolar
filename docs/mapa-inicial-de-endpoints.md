@@ -2,6 +2,8 @@
 
 **Atualizado em 15/10/2026:** todas as operações deste mapa estão implementadas e testadas localmente na `feature/livros`. As APIs novas não foram publicadas. Veja o [contrato completo](specs/2026-10-15-apis-restantes-design.md) e o [QAT](qat-e-proximos-passos.md). Os status de produção da autenticação/perfil abaixo são históricos, sem nova validação pública nesta entrega.
 
+**Revisão local de 16/10:** login e `/me` retornam o perfil completo; PATCH aceita nome, contatos e vínculo explícito com leitor. Empréstimos incluem localização e nomes de exibição. [Detalhes para integração](specs/2026-10-16-aderencia-frontend.md) e [QAT desta revisão](qat-resultado-2026-10-16-frontend.md).
+
 ## Objetivo
 
 Definir as operações mínimas da API para orientar a divisão do trabalho entre frontend, backend e banco de dados.
@@ -21,8 +23,8 @@ Definir as operações mínimas da API para orientar a divisão do trabalho entr
 | Técnica | `GET /api/ready` | Verificar a conexão com o MySQL | Disponível |
 | Sessão | `POST /api/v1/auth/login` | Iniciar a sessão de um funcionário | Disponível em produção |
 | Sessão | `POST /api/v1/auth/logout` | Encerrar a sessão atual | Disponível em produção |
-| Sessão | `GET /api/v1/me` | Obter perfil e permissões da sessão atual | Disponível em produção |
-| Perfil | `PATCH /api/v1/me` | Atualizar dados permitidos do próprio perfil | Disponível em produção (só o campo `nome` por enquanto) |
+| Sessão | `GET /api/v1/me` | Obter perfil completo e indicadores pessoais da sessão atual | Base anterior em produção; novos campos implementados/testados localmente |
+| Perfil | `PATCH /api/v1/me` | Atualizar nome, contatos e vínculo explícito com leitor | Nome na versão histórica de produção; ampliação implementada/testada localmente |
 | Perfil | `PUT /api/v1/me/senha` | Alterar a própria senha | Disponível em produção (invalida as demais sessões do funcionário) |
 | Funcionários | `POST /api/v1/funcionarios` | Cadastrar outro funcionário com a mesma permissão | Implementado e testado localmente; não publicado |
 | Acervo | `GET /api/v1/livros`<br>`POST /api/v1/livros` | Listar, buscar e cadastrar livros | Implementado e testado localmente; não publicado |
@@ -46,4 +48,4 @@ Definir as operações mínimas da API para orientar a divisão do trabalho entr
 
 ## Próximo passo
 
-Executar o QAT manual pelo Swagger, integrar as telas e revisar a publicação. O contrato OpenAPI acompanha o código; testes e evidências constam no QAT. Implementação local não comprova disponibilização em produção.
+Integrar as telas conforme o contrato e executar seu aceite; revisar o PR e preparar a publicação. O QAT técnico atualizado usa cliente HTTP real e testes nos dois bancos; não comprova disponibilização em produção nem aceite completo do Angular.

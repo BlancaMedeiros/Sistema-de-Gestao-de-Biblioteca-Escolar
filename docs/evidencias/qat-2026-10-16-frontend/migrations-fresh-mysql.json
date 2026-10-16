@@ -1,0 +1,18 @@
+{
+  "metodo": "Instalação do zero em banco local exclusivo desta execução",
+  "versao": "8.4.11",
+  "aplicadas": [
+    "0001_create_funcionarios.sql",
+    "0002_create_sessoes.sql",
+    "0003_create_livros.sql",
+    "0004_create_usuarios.sql",
+    "0005_create_emprestimos.sql",
+    "0006_create_renovacoes.sql",
+    "0007_create_idempotencia.sql",
+    "0008_extend_perfil_funcionarios.sql",
+    "0009_add_vinculo_funcionario_leitor.sql"
+  ],
+  "segundaExecucao": [],
+  "resultado": "aprovado",
+  "limpeza": "banco exclusivo removido"
+}

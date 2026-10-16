@@ -1,5 +1,7 @@
 # Resultado do QAT das APIs — 16/10/2026
 
+**Registro histórico do commit `5199ab5`.** A revisão posterior de perfil/localização tem [QAT próprio com 236 testes e 36 casos HTTP](qat-resultado-2026-10-16-frontend.md). Os resultados abaixo continuam associados à versão anterior.
+
 **Resultado técnico: aprovado para integração local do frontend.** Não foi publicado em produção. O recebimento pela Bianca e a revisão humana do PR continuam sendo etapas de entrega, sem confirmação neste relatório.
 
 Código testado: commit `5199ab59b1bb2d44fed9784f13e67a2e52c8171d`, branch `feature/livros`. Os testes foram executados no conteúdo que compõe esse commit; alterações posteriores deste relatório são documentação/evidências. O [checklist](qat-aceite-backend.md) define os casos e o [contrato](specs/2026-10-15-apis-restantes-design.md) define o comportamento. O [índice do workspace](../../relatorios/00-leia-primeiro.markdown) preserva o diagnóstico histórico.

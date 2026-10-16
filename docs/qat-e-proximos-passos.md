@@ -4,6 +4,8 @@
 
 **Nova rodada concluída em 16/10:** [resultado do QAT](qat-resultado-2026-10-16.md), com 214 testes aprovados em cada banco, 23 operações por HTTP real, conferência visual do Swagger e correções. As evidências de 15/10 abaixo permanecem como histórico. Para integração, use o [guia da Bianca](entrega-backend-bianca.md).
 
+**Revisão posterior no mesmo dia:** [QAT de aderência às telas](qat-resultado-2026-10-16-frontend.md), com 236 testes e 36 casos HTTP em cada banco. Meu Perfil inclui contatos, vínculo explícito e indicadores; empréstimos incluem localização e nomes de exibição. Os dados e totais abaixo permanecem históricos.
+
 Para organizar uma rodada e decidir se o backend pode ser entregue à Bianca, comece pelo [checklist de aceite e entrega](qat-aceite-backend.md). Ele relaciona as 23 operações, regras obrigatórias, evidências e critérios de aprovação. Os passos detalhados de livros e empréstimos continuam neste roteiro; autenticação e perfil estão no [roteiro de autenticação](como-testar-autenticacao.md).
 
 ## Situação atual

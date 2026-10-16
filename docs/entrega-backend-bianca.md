@@ -1,6 +1,6 @@
 # Entrega das APIs para integração do frontend
 
-As 23 operações do backend estão implementadas na branch `feature/livros`, sobre `feat/backend-foundation`. Código validado no commit `5199ab5`; o [resultado do QAT de 16/10](qat-resultado-2026-10-16.md) e os arquivos de evidência acompanham a branch. Consulte o PR para o CI e a revisão da versão mais recente. As novas APIs ainda não foram publicadas.
+As 23 operações do backend estão implementadas na branch `feature/livros`, sobre `feat/backend-foundation`, no [PR 13](https://github.com/BlancaMedeiros/Sistema-de-Gestao-de-Biblioteca-Escolar/pull/13). A revisão inclui Meu Perfil completo e localização nos empréstimos. Veja o [QAT atualizado](qat-resultado-2026-10-16-frontend.md), com versão testada e evidências, e o CI do PR. As novas APIs ainda não foram publicadas.
 
 ## Obter e executar a versão
 
@@ -54,11 +54,17 @@ Esse comando serve o Angular pelo Node do host; o destino `127.0.0.1:3000` corre
 
 O [contrato completo](specs/2026-10-15-apis-restantes-design.md) contém DTOs, filtros e códigos. Exemplos executáveis estão no Swagger e no [roteiro de QAT](qat-e-proximos-passos.md).
 
+O [contrato específico para as telas atuais](specs/2026-10-16-aderencia-frontend.md) mostra os novos campos, exemplos de perfil/vínculo e as adaptações necessárias nos serviços Angular.
+
 - **Autenticação:** login estabelece cookie HttpOnly `__session`; `/me` restaura o usuário após F5; sair chama `POST /auth/logout`. Não ler esse cookie pelo JavaScript nem tratar localStorage como confirmação de sessão.
 - **Leitores e funcionários:** `/usuarios` cadastra leitores, sem conta de acesso; `/funcionarios` cria conta autenticável. Há um único nível de permissão de funcionário.
+- **Meu Perfil:** login e `/me` devolvem contatos, cargo, matrícula e indicadores. PATCH aceita `nome`, `email`, `telefone` e vínculo opcional `usuarioId`; campos omitidos são preservados, contato null/vazio é apagado. `matricula`/contadores vêm do leitor explicitamente vinculado; sem vínculo ficam null/zero. Nunca associar pelo mesmo ID da conta. Contatos da conta e do leitor são independentes. `cargo` permanece `Funcionário autorizado`.
+- **Senha:** usar `PUT /me/senha` com `senhaAtual` e `novaSenha`; acrescentar senha atual no formulário, que hoje só tem nova senha. Aguardar a resposta antes de mostrar sucesso. `novaSenha` enviada ao PATCH não altera a senha.
 - **Leitura de respostas:** item em `data`; listas paginadas em `data` e `pagination`; histórico inclui `resumo`. Livros não são paginados nesta versão.
 - **Datas:** `YYYY-MM-DD`, dia calculado em São Paulo. Exibir como data civil; não converter meia-noite UTC para horário local e deslocar o dia.
+- **Opcionais e páginas:** ajustar os modelos para contatos/ISBN/matrícula/devolução real anuláveis. Leitores e movimentações usam padrão de 20 e máximo de 100 por página; o seletor precisa pesquisar/paginar. O backend já suporta quantidade em manutenção, ainda ausente no formulário de livro.
 - **Empréstimo:** enviar somente `livroId` e `usuarioId`; servidor define datas, operador, disponibilidade e status.
+- **Localização:** exibir `livroLocalizacao` do próprio empréstimo, também no histórico de livro inativo. O DTO inclui `livroEstante`/`livroPrateleira` e aliases `livro`/`usuario` para o dashboard. Localização/nome são do cadastro atual, não de uma fotografia histórica.
 - **Idempotência:** gerar `crypto.randomUUID()` para cada intenção de emprestar, renovar ou devolver. Durante erro de rede/retentativa da mesma intenção, preservar chave e dados. Uma ação nova recebe chave nova. Depois de movimentar, consultar o estado atualizado; uma resposta repetida de chave antiga é a resposta original.
 - **Validação e conflitos:** 401 exige restabelecer sessão; 422 apresenta campos inválidos e preserva formulário; 409 apresenta a regra/estado conflitante, preserva os dados e atualiza o estado necessário; 404 indica recurso indisponível. Não repetir automaticamente um 409 com outra chave como se fosse sucesso.
 - **Estoque:** saldo é total menos manutenção menos empréstimos abertos. DELETE de livro é inativação lógica, exige ausência de empréstimos e passa a dar 404 nas consultas do acervo. Não há API para reativar livro; leitor pode ser reativado por PATCH.
@@ -69,7 +75,9 @@ O [contrato completo](specs/2026-10-15-apis-restantes-design.md) contém DTOs, f
 
 - [ ] Obteve a branch/commit e subiu migrations/backend.
 - [ ] Abriu o Swagger, fez login e consultou `/me` com 200.
+- [ ] Salvou contatos; associou explicitamente o leitor correto quando aplicável; conferiu matrícula e indicadores pessoais. Preferir o rótulo `Total de empréstimos` ao atual `Total de Leituras`.
 - [ ] Cadastrou leitor/livro e concluiu empréstimo → renovação → devolução usando as chaves.
 - [ ] Confirmou chamadas do frontend para a API local e o tratamento dos erros de contrato.
+- [ ] Exibiu a localização do DTO mesmo após inativação do livro, sem consultar apenas o acervo ativo.
 
 O QAT técnico local foi executado; estes itens de recebimento ainda dependem da execução pela Bianca. A integração das telas e os testes Angular pendentes pertencem à etapa seguinte. Antes de publicar, concluir as pendências de segurança e de ambiente descritas no resultado do QAT. Nenhuma mensagem foi enviada à Bianca por esta entrega.

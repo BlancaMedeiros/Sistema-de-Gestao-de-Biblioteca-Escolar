@@ -1,6 +1,6 @@
 # QAT e aceite do backend para entrega à Bianca
 
-**Modelo preparado em 16/10/2026. Rodada técnica concluída:** veja o [resultado e evidências de 16/10](qat-resultado-2026-10-16.md) e o [guia para Bianca](entrega-backend-bianca.md). Este checklist mantém os campos NE como modelo para novas rodadas; eles não substituem o resultado já registrado. O [QAT detalhado](qat-e-proximos-passos.md) registra as verificações de 15/10 e os passos de livros/empréstimos. O [contrato](specs/2026-10-15-apis-restantes-design.md) é a referência de campos, filtros e códigos. O [índice do workspace](../../relatorios/00-leia-primeiro.markdown) mantém os relatórios históricos.
+**Modelo preparado em 16/10/2026. Rodada técnica concluída e ampliada para as telas atuais:** veja o [resultado atualizado](qat-resultado-2026-10-16-frontend.md) e o [guia para Bianca](entrega-backend-bianca.md). Este checklist mantém os campos NE como modelo para novas rodadas; eles não substituem o resultado já registrado. O [QAT detalhado](qat-e-proximos-passos.md) mantém verificações históricas e passos de livros/empréstimos. O [contrato](specs/2026-10-15-apis-restantes-design.md) é a referência de campos, filtros e códigos. O [índice do workspace](../../relatorios/00-leia-primeiro.markdown) mantém os relatórios históricos.
 
 ## O que precisa estar aprovado
 
@@ -8,13 +8,13 @@ Uma rodada completa precisa identificar a versão testada, comprovar as operaç�
 
 Para esta entrega, o aceite é **do backend para integração local**. O aceite do sistema pela interface depende da integração das telas, da sessão no Angular e da correção dos testes de frontend já falhos. Registre essas pendências no repasse.
 
-| Etapa                        | Evidência necessária                                                  | Situação ao preparar este checklist                                                                                                      |
+| Etapa                        | Evidência necessária                                                  | Situação verificada nesta revisão                                                                                                      |
 | ---------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Identificar a versão         | Branch, commit, alterações locais, data e ambiente                    | `feature/livros`, implementação ainda sem commit/push; falta fixar versão para o aceite final                                            |
-| Validar automaticamente      | Saída completa, código de saída e versão correspondente               | 207/207 testes em 22 arquivos em cada banco local, MySQL 8.4 e TiDB 8.5.3, registrados em 15/10; build backend aprovado naquela execução |
-| Executar aceite manual       | Status HTTP, resposta, IDs e conferência dos efeitos dos casos abaixo | Não executado manualmente                                                                                                                |
-| Revisar e corrigir           | Registro de defeitos, reteste e revisão de código/migrations/contrato | Revisão e aceite final pendentes                                                                                                         |
-| Entregar versão reproduzível | Commit acessível, CI do PR aprovado, instruções e pendências          | Implementação ainda local; CI das novas APIs ainda sem execução no GitHub                                                                |
+| Identificar a versão         | Branch, commit, alterações locais, data e ambiente                    | `feature/livros`, código `5ddd31a`; evidências e limites no resultado atualizado |
+| Validar automaticamente      | Saída completa, código de saída e versão correspondente               | 236/236 testes em 24 arquivos em cada banco local, MySQL 8.4.11 e TiDB 8.5.3; builds backend/frontend aprovados |
+| Executar aceite funcional    | Status HTTP, resposta, IDs e conferência dos efeitos dos casos abaixo | 36 cenários/129 requisições por banco via HTTP real automatizado; não é execução manual humana |
+| Revisar e corrigir           | Registro de defeitos, reteste e revisão de código/migrations/contrato | Correções e retestes registrados; revisão independente do PR e aceite das telas pendentes |
+| Entregar versão reproduzível | Commit acessível, CI do PR aprovado, instruções e pendências          | PR 13 em rascunho para `feat/backend-foundation`; consultar CI da revisão atual; guia para Bianca atualizado |
 
 ## 1. Preparar uma rodada
 
@@ -60,9 +60,9 @@ docker compose exec -T backend npm test
 docker compose exec -T backend npm run build
 ```
 
-Guarde a saída completa, o código de saída de cada comando e a identificação da versão. Os dois comandos devem terminar com código 0. A referência atual é 214 testes em 23 arquivos, sem falhas ou testes ignorados; qualquer mudança na quantidade precisa ser explicada. Esses comandos usam o banco local configurado no Compose e a suíte cria/remove seus próprios dados.
+Guarde a saída completa, o código de saída de cada comando e a identificação da versão. Os dois comandos devem terminar com código 0. A referência desta revisão é 236 testes em 24 arquivos, sem falhas ou testes ignorados: 214 anteriores, 19 de perfil e três de localização. Esses comandos usam o banco local configurado no Compose e a suíte cria/remove seus próprios dados.
 
-As migrations 0001–0007 devem ter concluído sem erro; uma segunda execução deve informar ausência de pendências. Se precisar repetir explicitamente pelo serviço local:
+As migrations 0001–0009 devem ter concluído sem erro; uma segunda execução deve informar ausência de pendências. Se precisar repetir explicitamente pelo serviço local:
 
 ```powershell
 docker compose run --rm migrate
@@ -83,7 +83,7 @@ Todos os estados abaixo começam em **NE — não executado**. Ao executar, subs
 | API-01 | `POST /auth/login`                 | Correto: 200 e sessão; errado: 401; campos ausentes: 422                                                       | NE                 |
 | API-02 | `POST /auth/logout`                | 204; a mesma sessão recebe 401 em `/me` e livros depois                                                        | NE                 |
 | API-03 | `GET /me`                          | Sem sessão: 401; autenticado: 200 com o funcionário correto e sem senha/hash                                   | NE                 |
-| API-04 | `PATCH /me`                        | Nome altera com 200 e persiste no GET; vazio: 422 sem alteração; login não é editado por esta rota             | NE                 |
+| API-04 | `PATCH /me`                        | Nome/contatos/vínculo persistem; inválido ou sem editáveis: 422; vínculo inexistente: 404, já usado: 409; rollback integral | NE |
 | API-05 | `PUT /me/senha`                    | Atual errada: 401; nova curta: 422; válida: 204; login antigo falha, novo funciona; outra sessão é invalidada  | NE                 |
 | API-06 | `POST /funcionarios`               | 201 e login da nova conta funciona; duplicado: 409; inválido: 422; resposta sem senha/hash                     | NE                 |
 | API-07 | `POST /livros`                     | 201, saldo calculado e ISBN normalizado; duplicado: 409; entradas inválidas: 422                               | NE                 |
@@ -105,6 +105,19 @@ Todos os estados abaixo começam em **NE — não executado**. Ao executar, subs
 | API-23 | `GET /relatorios/pendencias`       | 200, abertos por padrão; devolvido sai; filtros/paginação corretos; filtro Devolvido: 422                      | NE                 |
 
 O [roteiro de autenticação](como-testar-autenticacao.md) explica API-01–06. O [fluxo de livros e empréstimos](qat-e-proximos-passos.md#roteiro-manual-completo) cobre os cadastros e as movimentações. Os casos de busca/validação de livros têm passos na seção anterior desse roteiro.
+
+### Compatibilidade com as telas atuais
+
+Estes cenários complementam as 23 operações existentes; não acrescentam endpoints:
+
+| ID | Conferência mínima | Estado / evidência |
+| --- | --- | --- |
+| COMPAT-01 | Perfil completo; contatos persistentes; inválido não altera; cargo/matrícula/contadores não podem ser forjados | NE |
+| COMPAT-02 | Vínculo explícito e exclusivo; matrícula correta; contatos da conta/leitor independentes; disputa/404/409 sem edição parcial | NE |
+| COMPAT-03 | Indicadores do leitor vinculado, não dos leitores atendidos; devolver mantém histórico; reinício preserva associação/contatos | NE |
+| COMPAT-04 | Localização e nomes no próprio DTO em histórico/listas/painel/pendências; livro inativo mantém localização; sem partes usa fallback; GET atual e repetição idempotente original | NE |
+
+O HTTP QAT exercita COMPAT-01–04 nos dois bancos; a suíte complementa concorrência, cadastro de conta com vínculo, atraso nos contadores, localização parcial e alteração posterior de localização.
 
 ## 4. Comprovar as regras e os efeitos
 
