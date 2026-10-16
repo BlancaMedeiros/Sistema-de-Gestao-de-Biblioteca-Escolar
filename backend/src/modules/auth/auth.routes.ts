@@ -17,7 +17,7 @@ const loginSchema = z.object({
 });
 
 const atualizarPerfilSchema = z.object({
-  nome: z.string().trim().min(1),
+  nome: z.string().trim().min(1).max(120),
 });
 
 const alterarSenhaSchema = z.object({
@@ -192,6 +192,8 @@ authRouter.get('/me', requireAuth, async (request, response, next) => {
  *             properties:
  *               nome:
  *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 120
  *                 example: Ana Bibliotecária
  *     responses:
  *       200:
@@ -299,7 +301,12 @@ authRouter.put('/me/senha', requireAuth, async (request, response, next) => {
 
   try {
     const funcionarioId = request.session.funcionarioId as number;
-    const resultado = await alterarSenha(pool, funcionarioId, parsed.data.senhaAtual, parsed.data.novaSenha);
+    const resultado = await alterarSenha(
+      pool,
+      funcionarioId,
+      parsed.data.senhaAtual,
+      parsed.data.novaSenha,
+    );
 
     if (resultado === 'senha_atual_invalida') {
       response.status(401).json({
