@@ -2,9 +2,10 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService} from '../../services/dashboard.service';
-import { MetricasDashboard } from '../../models/metricas-dashboard.model';
-import { EmprestimoRecente } from '../../models/emprestimo-recente.model';
 import { EmprestimoService } from '../../services/emprestimo.service';
+import { firstValueFrom } from 'rxjs';
+import { Emprestimo } from '../../models/emprestimo.model';
+import { MetricasDashboard } from '../../models/metricas-dashboard.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +18,7 @@ export class DashboardComponent implements OnInit {
 
   // Variáveis para armazenar os dados vindos do serviço
   public metricas!: MetricasDashboard;
-  public ultimosEmprestimos: EmprestimoRecente[] = [];
+  public ultimosEmprestimos: Emprestimo[] = [];
   public carregando: boolean = true;
 
   constructor(private dashboardService: DashboardService, private emprestimosService: EmprestimoService, private cdr: ChangeDetectorRef) {}
@@ -27,23 +28,12 @@ export class DashboardComponent implements OnInit {
   }
 
   private async carregarDadosDashboard() {
-    // Busca as métricas
-    (await this.dashboardService.getMetricas()).subscribe({
-      next: (dados) => {
-        this.metricas = dados;
-      },
-      error: (err) => console.error('Erro ao carregar métricas:', err)
-    });
-
-    // Busca a lista de empréstimos
-    this.emprestimosService.getUltimosEmprestimos().subscribe({
-      next: (dados) => {
-        this.ultimosEmprestimos = dados;
-        this.carregando = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Erro ao carregar empréstimos:', err)
-    });
+    this.carregando = true;
+    const data = await firstValueFrom(this.dashboardService.getMetricas());
+    this.metricas = data.metricas;
+    this.ultimosEmprestimos = data.ultimosEmprestimos;
+    this.carregando = false;
+    this.cdr.detectChanges();
   }
 
   // Função auxiliar para definir a classe CSS da tag de status

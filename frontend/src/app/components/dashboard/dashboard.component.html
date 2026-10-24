@@ -52,7 +52,7 @@
   <section class="tabela-container">
     <div class="tabela-header">
       <h2>Últimos Empréstimos</h2>
-      <a routerLink="/emprestimos" class="btn-ver-todos">Ver Todos</a>
+      <a routerLink="/emprestimo" class="btn-ver-todos">Ver Todos</a>
     </div>
 
     <table class="tabela-atividades">
@@ -68,8 +68,8 @@
       <tbody>
         <!-- LOOP DINÂMICO DOS EMPRÉSTIMOS -->
         <tr *ngFor="let item of ultimosEmprestimos">
-          <td>{{ item.livro }}</td>
-          <td>{{ item.usuario }}</td>
+          <td>{{ item.livroTitulo }}</td>
+          <td>{{ item.usuarioNome }}</td>
           <td>{{ item.dataEmprestimo }}</td>
           <td>{{ item.devolucaoPrevista }}</td>
           <td>

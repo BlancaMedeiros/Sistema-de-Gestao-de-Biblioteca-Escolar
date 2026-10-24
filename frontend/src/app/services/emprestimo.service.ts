@@ -1,7 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Emprestimo } from "../models/emprestimo.model";
 import { catchError, map, Observable, of, throwError } from "rxjs";
-import { EmprestimoRecente } from "../models/emprestimo-recente.model";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../environments/environment";
 import { ResponseDTO } from "../models/response-dto.model";
@@ -24,22 +23,9 @@ export class EmprestimoService {
     ];
 
     constructor(private http:HttpClient){}
-    
-    getUltimosEmprestimos(): Observable<EmprestimoRecente[]> {
-      const ultimos = this.mockEmprestimos.slice(0, 4).map(e => ({
-        id: e.id,
-        livro: e.livroTitulo,
-        usuario: e.usuarioNome,
-        dataEmprestimo: e.dataEmprestimo,
-        devolucaoPrevista: e.devolucaoPrevista,
-        status: e.status
-      }));
-  
-      return of(ultimos);
-    }
   
     getEmprestimos(usuarioId?: number, page: number = 1, pageSize: number = 100): Observable<Emprestimo[]> {
-      return this.http.get<ResponseDTO<Emprestimo[]>>(`${environment.apiUrl}/emprestimos?page=${page}&pageSize=${pageSize}&usuarioId=${usuarioId}`).pipe(
+      return this.http.get<ResponseDTO<Emprestimo[]>>(`${environment.apiUrl}/emprestimos?page=${page}&pageSize=${pageSize}${ usuarioId?'&usuarioId='+usuarioId:'' }`).pipe(
         map((response)=> response.data)
       )
     }
