@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DashboardService } from '../../services/dashboard.service';
@@ -8,6 +8,7 @@ import { Usuario } from '../../models/usuario.model';
 import { EmprestimoService } from '../../services/emprestimo.service';
 import { UsuariosService } from '../../services/usuarios.service';
 import { AcervoService } from '../../services/acervo.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-emprestimos',
@@ -35,7 +36,7 @@ export class EmprestimosComponent implements OnInit {
     devolucaoPrevista: this.getDataFuturaFormatada(7)
   };
 
-  constructor(private emprestimoService: EmprestimoService, private usuariosService: UsuariosService, private acervoService: AcervoService) {}
+  constructor(private emprestimoService: EmprestimoService, private usuariosService: UsuariosService, private acervoService: AcervoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.carregarDados();
@@ -49,7 +50,8 @@ export class EmprestimosComponent implements OnInit {
 
     this.carregarLivros();
 
-    this.usuariosService.getUsuarios().subscribe((usuarios) => {
+    this.usuariosService.getUsuarios().subscribe((response) => {
+      const usuarios = response.data
       this.usuariosAtivos = usuarios.filter(u => u.status === 'Ativo');
     });
   }
@@ -59,6 +61,7 @@ export class EmprestimosComponent implements OnInit {
       this.todosLivros = livros;
       this.livrosDisponiveis = livros.filter(l => l.quantidadeDisponivel > 0);
     });
+    this.cdr.detectChanges();
   }
 
   aplicarFiltros(): void {
@@ -70,6 +73,7 @@ export class EmprestimosComponent implements OnInit {
 
       return atendeBusca && atendeStatus;
     });
+    this.cdr.detectChanges();
   }
 
   obterLocalizacaoLivro(livroId: number): string {
@@ -85,24 +89,23 @@ export class EmprestimosComponent implements OnInit {
     return this.obterLocalizacaoLivro(Number(this.novoEmprestimo.livroId));
   }
 
-  renovarEmprestimo(emprestimo: Emprestimo): void {
-    const partes = emprestimo.devolucaoPrevista.split('/');
-    const dataAtual = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
-    dataAtual.setDate(dataAtual.getDate() + 7);
-
-    emprestimo.devolucaoPrevista = this.formatarData(dataAtual);
-    alert(`Empréstimo do livro "${emprestimo.livroTitulo}" renovado por mais 7 dias!`);
+  async renovarEmprestimo(emprestimo: Emprestimo): Promise<void> {
+    const idempotencyKey = crypto.randomUUID();
+    const resultado = await firstValueFrom(this.emprestimoService.renovar(emprestimo.id, idempotencyKey));
+    if(resultado){
+      this.carregarDados();
+      alert(`Empréstimo do livro "${emprestimo.livroTitulo}" renovado por mais 7 dias!`);
+    }
   }
 
-  devolverLivro(emprestimo: Emprestimo): void {
+  async devolverLivro(emprestimo: Emprestimo): Promise<void> {
     const confirmacao = confirm(`Confirmar a devolução do livro "${emprestimo.livroTitulo}"?`);
     if (confirmacao) {
-      emprestimo.status = 'Devolvido';
-      emprestimo.devolucaoReal = this.getHojeFormatado();
-      
-      this.acervoService.incrementarEstoque(emprestimo.livroId);
-      this.carregarLivros();
-      this.aplicarFiltros();
+      const idempotencyKey = crypto.randomUUID();
+      const resultado = await firstValueFrom(this.emprestimoService.devolver(emprestimo.id, idempotencyKey));
+      if(resultado){
+        this.carregarDados();
+      }
     }
   }
 
@@ -113,13 +116,16 @@ export class EmprestimosComponent implements OnInit {
   fecharModal(): void {
     this.exibirModalNovo = false;
     this.resetarFormulario();
+    this.cdr.detectChanges();
   }
 
-  salvarEmprestimo(): void {
+  
+
+  async salvarEmprestimo(): Promise<void> {
     const livro = this.livrosDisponiveis.find(l => l.id === Number(this.novoEmprestimo.livroId));
     const usuario = this.usuariosAtivos.find(u => u.id === Number(this.novoEmprestimo.usuarioId));
 
-    if (livro && usuario) {
+    if (livro && usuario && livro.id) {
       const item: Emprestimo = {
         id: this.emprestimos.length + 1,
         livroId: livro.id,
@@ -131,13 +137,13 @@ export class EmprestimosComponent implements OnInit {
         status: 'Em Andamento'
       };
 
-      this.emprestimos.unshift(item);
-      
-      this.acervoService.decrementarEstoque(livro.id);
-      this.carregarLivros();
-
-      this.aplicarFiltros();
-      this.fecharModal();
+      // this.emprestimos.unshift(item);
+      const IdempotencyKey = crypto.randomUUID()
+      const response  = await firstValueFrom(this.emprestimoService.adicionarEmprestismo(item, IdempotencyKey));
+      if(response){
+        this.carregarDados();
+        this.fecharModal();
+      }
     }
   }
 

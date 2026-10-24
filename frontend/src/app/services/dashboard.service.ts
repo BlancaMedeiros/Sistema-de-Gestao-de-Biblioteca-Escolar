@@ -12,7 +12,8 @@ export class DashboardService {
   constructor(private usuariosService: UsuariosService, private acervoService: AcervoService, private emprestimoService: EmprestimoService) { }
 
   async getMetricas(): Promise<Observable<MetricasDashboard>> {
-    const usuarios = await firstValueFrom(this.usuariosService.getUsuarios());
+    const response = await firstValueFrom(this.usuariosService.getUsuarios());
+    const usuarios = response.data
     const acervo = await firstValueFrom(this.acervoService.getAcervo());
     const emprestimos = await firstValueFrom(this.emprestimoService.getEmprestimos())
 

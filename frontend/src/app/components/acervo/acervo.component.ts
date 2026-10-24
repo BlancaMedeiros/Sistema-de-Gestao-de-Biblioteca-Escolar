@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Livro } from '../../models/livro.model';
 import { AcervoService } from '../../services/acervo.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-acervo',
@@ -18,7 +19,7 @@ export class AcervoComponent implements OnInit {
   categoriaFiltro: string = '';
   exibirModal: boolean = false;
   modoEdicao: boolean = false;
-  livroEdicaoId: number | null = null;
+  livroEdicaoId?: number | null = null;
 
   livroForm: Partial<Livro> = {
     titulo: '',
@@ -33,7 +34,7 @@ export class AcervoComponent implements OnInit {
     prateleira: ''
   };
 
-  constructor(private acervoService: AcervoService) {}
+  constructor(private acervoService: AcervoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.carregarAcervo();
@@ -41,6 +42,7 @@ export class AcervoComponent implements OnInit {
 
   carregarAcervo(): void {
     this.acervoService.getAcervo().subscribe((dados) => {
+      console.log('dados: ',dados)
       this.livros = dados;
       this.aplicarFiltros();
     });
@@ -50,14 +52,16 @@ export class AcervoComponent implements OnInit {
     this.livrosFiltrados = this.livros.filter(livro => {
       const atendeBusca = livro.titulo.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
                           livro.autor.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
-                          livro.isbn.includes(this.termoBusca) ||
+                          livro.isbn?.toLowerCase().includes(this.termoBusca.toLocaleLowerCase()) ||
                           (livro.estante && livro.estante.toLowerCase().includes(this.termoBusca.toLowerCase())) ||
                           (livro.prateleira && livro.prateleira.toLowerCase().includes(this.termoBusca.toLowerCase()));
 
-      const atendeCategoria = this.categoriaFiltro ? livro.categoria === this.categoriaFiltro : true;
+      const atendeCategoria = this.categoriaFiltro ? livro.categoria?.toLowerCase() === this.categoriaFiltro.toLowerCase() : true;
 
       return atendeBusca && atendeCategoria;
     });
+    this.cdr.detectChanges()
+    console.log('aplica Filtros')
   }
 
   abrirModalNovo(): void {
@@ -77,9 +81,10 @@ export class AcervoComponent implements OnInit {
   fecharModal(): void {
     this.exibirModal = false;
     this.resetarFormulario();
+    this.cdr.detectChanges();
   }
 
-  salvarLivro(): void {
+  async salvarLivro(): Promise<void> {
     if (!this.livroForm.titulo || !this.livroForm.autor) return;
 
     if (this.modoEdicao && this.livroEdicaoId !== null) {
@@ -89,13 +94,18 @@ export class AcervoComponent implements OnInit {
           ...this.livros[index],
           ...this.livroForm
         } as Livro;
+        await firstValueFrom(this.acervoService.atualizarLivro(this.livros[index]));
       }
     } else {
+      if(!this.livroForm.isbn){
+        alert("ISBN não foi preenchido")
+        return;
+      }
+        
       const novo: Livro = {
-        id: this.livros.length + 1,
         titulo: this.livroForm.titulo!,
         autor: this.livroForm.autor!,
-        isbn: this.livroForm.isbn || '000-0000000000',
+        isbn: this.livroForm.isbn,
         categoria: this.livroForm.categoria || 'Geral',
         anoPublicacao: Number(this.livroForm.anoPublicacao),
         quantidadeTotal: Number(this.livroForm.quantidadeTotal),
@@ -104,18 +114,26 @@ export class AcervoComponent implements OnInit {
         estante: this.livroForm.estante || 'Não informada',
         prateleira: this.livroForm.prateleira || 'Não informada'
       };
-      this.livros.unshift(novo);
+      const resultado = await firstValueFrom(this.acervoService.adicionarLivro(novo))
+      if(resultado){
+        this.fecharModal();
+        return this.carregarAcervo();
+      }
+      //this.livros.unshift(novo);
+      
     }
 
     this.aplicarFiltros();
     this.fecharModal();
   }
 
-  excluirLivro(livro: Livro): void {
+  async excluirLivro(livro: Livro): Promise<void> {
     const confirmacao = confirm(`Tem certeza que deseja excluir o livro "${livro.titulo}"?`);
     if (confirmacao) {
-      this.livros = this.livros.filter(l => l.id !== livro.id);
-      this.aplicarFiltros();
+      const resultado = await firstValueFrom(this.acervoService.deletarLivro(livro));
+      if(resultado){
+        this.carregarAcervo();
+      }
     }
   }
 

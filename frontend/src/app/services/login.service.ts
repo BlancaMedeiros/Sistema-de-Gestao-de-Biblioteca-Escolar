@@ -14,9 +14,11 @@ export class LoginService {
 
     // 1. Método para buscar o usuário logado (ex: pegando o ID 8 ou ID 1)
     async getPerfilLogado(): Promise<Observable<any>> {
-        if(!this.UsuarioLogado) return of();
+        if(!this.UsuarioLogado)
+            await firstValueFrom(this.ObtemUsuarioLogado());
 
-        const historicoUsuario = await firstValueFrom(this.emprestimosService.getEmprestimosDoUsuario(this.UsuarioLogado.id))
+        const historicoUsuario = await firstValueFrom(this.emprestimosService.getEmprestimos(this.UsuarioLogado.id));
+
         // Calcula estatísticas reais com base nos mocks do próprio serviço
         const emprestimosAtivos = historicoUsuario.filter(
             e => e.status === 'Em Andamento'
@@ -37,6 +39,15 @@ export class LoginService {
             login: username,
             senha: password
         }).pipe(
+            tap((response: any)=>{
+                if(response && response.data!=null){
+                    this.UsuarioLogado = response.data;
+                }
+            })
+        );
+    }
+    ObtemUsuarioLogado(){
+        return this.http.get(`${environment.apiUrl}/me`).pipe(
             tap((response: any)=>{
                 if(response && response.data!=null){
                     this.UsuarioLogado = response.data;

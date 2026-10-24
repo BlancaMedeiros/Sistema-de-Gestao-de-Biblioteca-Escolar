@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Usuario } from '../models/usuario.model';
-import { Observable, of } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { ResponseDTO } from '../models/response-dto.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,23 +21,25 @@ export class UsuariosService {
         { id: 9, nome: 'Felipe Barbosa', telefone: '(11) 98765-4321', email: 'felipe.barbosa@escola.com', matricula: 'ALU-202606', tipo: 'Aluno', status: 'Ativo', dataCadastro: '01/03/2026' },
         { id: 10, nome: 'Amanda Souza', telefone: '(11) 98765-4321', email: 'amanda.souza@escola.com', matricula: 'ALU-202607', tipo: 'Aluno', status: 'Ativo', dataCadastro: '05/03/2026' }
     ];
+    constructor(private http: HttpClient){}
 
-    adicionarUsuario(usuario: Usuario): void {
-        this.mockUsuarios.unshift(usuario);
+    adicionarUsuario(usuario: Usuario): Observable<Usuario> {
+        return this.http.post<ResponseDTO<Usuario>>(`${environment.apiUrl}/usuarios`,usuario).pipe(
+            map((data)=> data.data)
+        );
     }
 
-    getUsuarios(): Observable<Usuario[]> {
-        return of(this.mockUsuarios);
+    getUsuarios(page: number=1, pageSize: number=20): Observable<ResponseDTO<Usuario[]>> {
+        return this.http.get<ResponseDTO<Usuario[]>>(`${environment.apiUrl}/usuarios?page=${page}&pageSize=${pageSize}`)
     }
     
     // 2. Método para salvar as alterações do perfil
-    atualizarPerfil(usuarioAtualizado: Usuario & { telefone?: string }): void {
-        const index = this.mockUsuarios.findIndex(u => u.id === usuarioAtualizado.id);
-        if (index !== -1) {
-            this.mockUsuarios[index] = {
-            ...this.mockUsuarios[index],
-            ...usuarioAtualizado
-            };
-        }
+    atualizarPerfil(usuarioAtualizado: Usuario): Observable<Usuario> {
+        return this.http.patch<ResponseDTO<Usuario>>(`${environment.apiUrl}/me`,usuarioAtualizado)
+            .pipe(
+                map((retorno)=>{
+                    return retorno.data;
+                })
+            )
     }
 }

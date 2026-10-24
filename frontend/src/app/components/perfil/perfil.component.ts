@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { DashboardService } from '../../services/dashboard.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,17 +19,23 @@ export class PerfilComponent implements OnInit {
   novaSenha = '';
   mensagemSucesso = '';
 
-  constructor(private usuarioService: UsuariosService, private loginService: LoginService) {}
+  constructor(private usuarioService: UsuariosService, private loginService: LoginService, private cdr: ChangeDetectorRef) {}
 
   async ngOnInit() {
-    // Busca os dados do usuário ID 8 (Bibliotecário) ou 1 (Aluno)
     this.usuario = await firstValueFrom(await this.loginService.getPerfilLogado())
+    this.cdr.detectChanges()
   }
 
-  salvarPerfil(): void {
-    this.usuarioService.atualizarPerfil(this.usuario);
-    
-    this.mensagemSucesso = 'Perfil atualizado com sucesso!';
-    setTimeout(() => this.mensagemSucesso = '', 3000);
+  async salvarPerfil(): Promise<void> {
+    const response = await firstValueFrom(this.usuarioService.atualizarPerfil(this.usuario));
+    if(response){
+      this.mensagemSucesso = 'Perfil atualizado com sucesso!';
+      this.usuario = response
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.mensagemSucesso = ''
+        this.cdr.detectChanges();
+      }, 3000);
+    }
   }
 }

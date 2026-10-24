@@ -1,7 +1,10 @@
 import { Injectable } from "@angular/core";
 import { Emprestimo } from "../models/emprestimo.model";
-import { Observable, of } from "rxjs";
+import { catchError, map, Observable, of, throwError } from "rxjs";
 import { EmprestimoRecente } from "../models/emprestimo-recente.model";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../../environments/environment";
+import { ResponseDTO } from "../models/response-dto.model";
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +23,7 @@ export class EmprestimoService {
       { id: 10,livroId: 10, livroTitulo: 'Triste Fim de Policarpo Quaresma', usuarioId: 10, usuarioNome: 'Amanda Souza', dataEmprestimo: '18/08/2026', devolucaoPrevista: '01/09/2026', status: 'Atrasado' }
     ];
 
-
+    constructor(private http:HttpClient){}
     
     getUltimosEmprestimos(): Observable<EmprestimoRecente[]> {
       const ultimos = this.mockEmprestimos.slice(0, 4).map(e => ({
@@ -35,8 +38,55 @@ export class EmprestimoService {
       return of(ultimos);
     }
   
-    getEmprestimos(): Observable<Emprestimo[]> {
-      return of(this.mockEmprestimos);
+    getEmprestimos(usuarioId?: number, page: number = 1, pageSize: number = 100): Observable<Emprestimo[]> {
+      return this.http.get<ResponseDTO<Emprestimo[]>>(`${environment.apiUrl}/emprestimos?page=${page}&pageSize=${pageSize}&usuarioId=${usuarioId}`).pipe(
+        map((response)=> response.data)
+      )
+    }
+    
+    adicionarEmprestismo(emprestimoNovo: Emprestimo, Idempotency: string): Observable<Emprestimo> {
+      return this.http.post<ResponseDTO<Emprestimo>>(`${environment.apiUrl}/emprestimos`, emprestimoNovo,
+        {
+          headers: { "Idempotency-Key": Idempotency }
+        }
+      ).pipe(
+        map((response)=> response.data),
+        catchError((error) => {
+          console.error('Erro ao cadastrar empréstimo:', error);
+          alert(error?.error?.error?.message)
+          return throwError(() => error);
+        })
+      )
+    }
+    
+    devolver(id: number, idempotencyKey: string): Observable<unknown> {
+      return this.http.post<ResponseDTO<Emprestimo>>(`${environment.apiUrl}/emprestimos/${id}/devolucao`, {},
+        {
+          headers: { "Idempotency-Key": idempotencyKey }
+        }
+      ).pipe(
+        map((response)=> response.data),
+        catchError((error) => {
+          console.error('Erro ao cadastrar empréstimo:', error);
+          alert(error?.error?.error?.message)
+          return throwError(() => error);
+        })
+      )
+    }
+    
+    renovar(id: number, idempotencyKey: string): Observable<unknown> {
+      return this.http.post<ResponseDTO<Emprestimo>>(`${environment.apiUrl}/emprestimos/${id}/renovacoes`, {},
+        {
+          headers: { "Idempotency-Key": idempotencyKey }
+        }
+      ).pipe(
+        map((response)=> response.data),
+        catchError((error) => {
+          console.error('Erro ao cadastrar empréstimo:', error);
+          alert(error?.error?.error?.message)
+          return throwError(() => error);
+        })
+      )
     }
 
 

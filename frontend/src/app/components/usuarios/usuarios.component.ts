@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Usuario } from '../../models/usuario.model';
 import { Emprestimo } from '../../models/emprestimo.model';
 import { UsuariosService } from '../../services/usuarios.service';
 import { EmprestimoService } from '../../services/emprestimo.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-usuarios',
@@ -35,15 +36,15 @@ export class UsuariosComponent implements OnInit {
     status: 'Ativo'
   };
 
-  constructor(private usuarioService: UsuariosService, private emprestimoService: EmprestimoService) {}
+  constructor(private usuarioService: UsuariosService, private emprestimoService: EmprestimoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.carregarUsuarios();
   }
 
   carregarUsuarios(): void {
-    this.usuarioService.getUsuarios().subscribe((dados) => {
-      this.usuarios = dados;
+    this.usuarioService.getUsuarios(1, 100).subscribe((dados) => {
+      this.usuarios = dados.data;
       this.aplicarFiltros();
     });
   }
@@ -59,12 +60,13 @@ export class UsuariosComponent implements OnInit {
 
       return atendeBusca && atendeTipo && atendeStatus;
     });
+    this.cdr.detectChanges();
   }
 
   verHistorico(usuario: Usuario): void {
     this.usuarioSelecionado = usuario;
-    this.emprestimoService.getEmprestimos().subscribe((emprestimos) => {
-      this.historicoUsuario = emprestimos.filter(e => e.usuarioId === usuario.id);
+    this.emprestimoService.getEmprestimos(usuario.id).subscribe((emprestimos) => {
+      this.historicoUsuario = emprestimos
       this.exibirModalHistorico = true;
     });
   }
@@ -84,7 +86,7 @@ export class UsuariosComponent implements OnInit {
     this.resetarFormulario();
   }
 
-  salvarUsuario(): void {
+  async salvarUsuario(): Promise<void> {
     if (this.novoUsuario.nome && this.novoUsuario.email && this.novoUsuario.matricula) {
       const item: Usuario = {
         id: this.usuarios.length + 1,
@@ -97,9 +99,11 @@ export class UsuariosComponent implements OnInit {
         dataCadastro: this.getHojeFormatado()
       };
      
-      this.usuarioService.adicionarUsuario(item);
-      this.carregarUsuarios();
-      this.fecharModalNovo();
+      const response = await firstValueFrom(this.usuarioService.adicionarUsuario(item));
+      if(response){
+        this.carregarUsuarios();
+        this.fecharModalNovo();
+      }
     }
   }
 

@@ -1,6 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Livro } from "../models/livro.model";
-import { Observable, of } from "rxjs";
+import { firstValueFrom, map, Observable } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../../environments/environment";
+import { ResponseDTO } from "../models/response-dto.model";
 
 @Injectable({
   providedIn: 'root'
@@ -19,23 +22,46 @@ export class AcervoService {
         { id: 10, titulo: 'Triste Fim de Policarpo Quaresma', autor: 'Lima Barreto', isbn: '9788520931561', categoria: 'Pré-Modernismo', anoPublicacao: 1915, quantidadeTotal: 3, quantidadeDisponivel: 2, status: 'Disponível', estante: 'Estante 04', prateleira: 'Prateleira B' }
     ];
 
+    constructor(private http: HttpClient){}
+
+
     getAcervo(): Observable<Livro[]> {
-        return of(this.mockAcervo);
+        return this.http.get<ResponseDTO<Livro[]>>(`${environment.apiUrl}/livros`)
+            .pipe(
+                map((retorno)=>{
+                    return retorno.data
+                }) 
+            )
     }
     
-    adicionarLivro(novoLivro: Livro): void {
-        this.mockAcervo.unshift(novoLivro);
+    adicionarLivro(novoLivro: Livro): Observable<Livro> {
+        return this.http.post<ResponseDTO<Livro>>(`${environment.apiUrl}/livros`, novoLivro)
+            .pipe(
+                map((retorno)=>{
+                    return retorno.data;
+                })
+            )
+    }
+    deletarLivro(livro: Livro): Observable<Livro> {
+        return this.http.delete<ResponseDTO<Livro>>(`${environment.apiUrl}/livros/${livro.id}`)
+            .pipe(
+                map((retorno)=>{
+                    return retorno.data;
+                })
+            )
     }
 
     
-    atualizarLivro(livroAtualizado: Livro): void {
-        const index = this.mockAcervo.findIndex(l => l.id === livroAtualizado.id);
-        if (index !== -1) {
-        this.mockAcervo[index] = livroAtualizado;
-        }
+    atualizarLivro(livroAtualizado: Livro): Observable<Livro> {
+        return this.http.patch<ResponseDTO<Livro>>(`${environment.apiUrl}/livros/${livroAtualizado.id}`,livroAtualizado)
+            .pipe(
+                map((retorno)=>{
+                    return retorno.data;
+                })
+            )
     }
 
-    decrementarEstoque(livroId: number): void {
+    decrementarEstoque(livroId?: number): void {
         const livro = this.mockAcervo.find(l => l.id === livroId);
         if (livro && livro.quantidadeDisponivel > 0) {
             livro.quantidadeDisponivel--;
