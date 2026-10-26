@@ -110,7 +110,7 @@ function responderConflito(response: Response, erro: unknown): boolean {
     response.status(409).json({
       error: {
         code: 'ISBN_DUPLICADO',
-        message: 'Este ISBN já está cadastrado, inclusive entre livros inativos.',
+        message: 'Este ISBN já está cadastrado em outro livro ativo.',
       },
     });
     return true;
@@ -194,8 +194,8 @@ livrosRouter.get('/livros/:id', async (request, response, next) => {
  * @openapi
  * /livros:
  *   post:
- *     summary: Cadastra um livro; ISBN é opcional e único, mesmo entre inativos.
- *     description: O backend gera ID, calcula quantidadeDisponivel e status. Escolha cadastro mínimo sem ISBN para começar ou completo com localização/manutenção. Guarde data.id; não envie ID ou saldo. Repetir um ISBN, mesmo em livro inativo, retorna 409.
+ *     summary: Cadastra um livro; ISBN é opcional e único entre livros ativos.
+ *     description: O backend gera ID, calcula quantidadeDisponivel e status. Escolha cadastro mínimo sem ISBN para começar ou completo com localização/manutenção. Guarde data.id; não envie ID ou saldo. Repetir o ISBN de um livro ativo retorna 409; o de um livro excluído pode ser reutilizado.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]
  *     requestBody:
@@ -300,7 +300,7 @@ livrosRouter.patch('/livros/:id', async (request, response, next) => {
  * @openapi
  * /livros/{id}:
  *   delete:
- *     summary: Inativa livro sem empréstimos abertos, preservando histórico e reserva do ISBN.
+ *     summary: Inativa livro sem empréstimos abertos, preservando o histórico e liberando o ISBN para outro livro.
  *     description: Exige todas as devoluções concluídas, senão retorna 409. Sucesso retorna 204 sem JSON; GET e nova exclusão desse ID passam a retornar 404. A operação é lógica e não apaga os empréstimos anteriores.
  *     tags: [Livros]
  *     security: [{ sessao: [] }]

@@ -167,9 +167,9 @@ const definition = {
         'Livro não encontrado.',
       ),
       IsbnDuplicado: respostaErro(
-        '409 ISBN_DUPLICADO: ISBN reservado por outro livro, inclusive inativo.',
+        '409 ISBN_DUPLICADO: ISBN em uso por outro livro ativo; o de livro excluído pode ser reutilizado.',
         'ISBN_DUPLICADO',
-        'Este ISBN já está cadastrado, inclusive entre livros inativos.',
+        'Este ISBN já está cadastrado em outro livro ativo.',
       ),
       LivroEncontrado: {
         description: 'Livro ativo com disponibilidade calculada.',

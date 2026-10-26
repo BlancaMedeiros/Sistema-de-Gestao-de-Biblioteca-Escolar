@@ -153,7 +153,7 @@ export const exemplosSwagger = {
   LivroCompleto: {
     summary: 'Cadastrar livro com localização e manutenção',
     description:
-      'Neste exemplo, 5 unidades menos 1 em manutenção deixam 4 disponíveis. ISBN é único, inclusive em livros inativos; troque-o se já utilizado.',
+      'Neste exemplo, 5 unidades menos 1 em manutenção deixam 4 disponíveis. ISBN é único entre livros ativos; troque-o se já estiver em uso.',
     value: livroCompleto,
   },
   LivroEdicao: {

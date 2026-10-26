@@ -70,6 +70,7 @@ CREATE TABLE livros (
 ```
 
 - `UNIQUE (isbn)` aceita vários `NULL`, então livros sem ISBN não conflitam entre si.
+- **Alterado em 26/10/2026:** o ISBN passou a ser único só entre livros ativos, para permitir recadastrar um livro excluído. As migrations `0010` a `0012` criam a coluna virtual `isbn_ativo` (`IF(ativo = 1, isbn, NULL)`), trocam `uq_livros_isbn` por `uq_livros_isbn_ativo` sobre ela e mantêm o ISBN gravado no livro inativo. Validado em MySQL 8.4 e TiDB v8.5.3 locais.
 - A collation `utf8mb4_0900_ai_ci` fica explícita para a busca ignorar maiúsculas e acentos no MySQL local e no TiDB: "memorias" encontra "Memórias". A busca foi testada nos dois bancos locais.
 - O ISBN é gravado normalizado: só dígitos e `X` maiúsculo, sem hífens nem espaços.
 - A validação verifica formato ISBN-10/13, sem cálculo do dígito de controle.
@@ -123,7 +124,7 @@ Todas as rotas ficam sob `/api/v1` e exigem sessão (`requireAuth` aplicado no r
 | --- | --- | --- |
 | 401 | `NAO_AUTENTICADO` | Sem sessão |
 | 404 | `LIVRO_NAO_ENCONTRADO` | ID inexistente, inválido ou de livro inativo |
-| 409 | `ISBN_DUPLICADO` | ISBN já usado por outro livro, inclusive inativo |
+| 409 | `ISBN_DUPLICADO` | ISBN já usado por outro livro ativo (antes de 26/10/2026, também bloqueava o de livro inativo) |
 | 422 | `DADOS_INVALIDOS` | Validação falhou; `fields` indica o campo e a mensagem |
 
 O conflito de ISBN é detectado pelo `ER_DUP_ENTRY` da constraint, como o `provisionar-funcionario.ts` faz com o login. Não há consulta prévia, o que evita corrida entre dois cadastros simultâneos.
@@ -211,5 +212,5 @@ Esta parte é da Bianca e não faz parte desta entrega do backend. Fica registra
 - Integração da tela (frontend), descrita acima.
 - Contagem de emprestados e o status "Esgotado" (fatia de empréstimos).
 - Bloquear a exclusão de livro com empréstimo aberto (fatia de empréstimos, caso B11 do plano de testes).
-- Reativar um livro inativo ou reaproveitar o ISBN dele.
+- Reativar um livro inativo. Reaproveitar o ISBN dele em outro livro passou a ser permitido em 26/10/2026.
 - Paginação, importação por CSV e seed de livros para desenvolvimento.

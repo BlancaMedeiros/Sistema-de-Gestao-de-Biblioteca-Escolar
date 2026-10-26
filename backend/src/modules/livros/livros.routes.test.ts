@@ -120,7 +120,7 @@ describe('API de livros com MySQL real', () => {
     expect(linhas).toHaveLength(0);
   });
 
-  test('reserva ISBN normalizado, inclusive após inativação, e rejeita conflito no PATCH', async () => {
+  test('ISBN normalizado é único entre ativos e volta a ficar livre após a inativação', async () => {
     const isbn = novoIsbn();
     const primeiro = await criar({ isbn: `${isbn.slice(0, 3)}-${isbn.slice(3)}` });
     expect(primeiro.status).toBe(201);
@@ -132,12 +132,34 @@ describe('API de livros com MySQL real', () => {
       .send({ isbn });
     expect(conflito.status).toBe(409);
     expect(conflito.body.error.code).toBe('ISBN_DUPLICADO');
-    await sessao.agente.delete(`/api/v1/livros/${primeiro.body.data.id}`);
-    expect((await criar({ isbn })).status).toBe(409);
-    const [linhas] = await pool.query<RowDataPacket[]>('SELECT id FROM livros WHERE isbn = ?', [
-      isbn,
+    expect((await sessao.agente.delete(`/api/v1/livros/${primeiro.body.data.id}`)).status).toBe(204);
+    const recadastro = await criar({ isbn });
+    expect(recadastro.status).toBe(201);
+    expect(recadastro.body.data.isbn).toBe(isbn);
+    // O livro inativo conserva o ISBN no histórico; só o ativo o ocupa.
+    const [linhas] = await pool.query<RowDataPacket[]>(
+      'SELECT id, ativo FROM livros WHERE isbn = ? ORDER BY id',
+      [isbn],
+    );
+    expect(linhas.map((l) => [Number(l.id), Number(l.ativo)])).toEqual([
+      [primeiro.body.data.id, 0],
+      [recadastro.body.data.id, 1],
     ]);
-    expect(linhas).toHaveLength(1);
+  });
+
+  test('PATCH pode adotar o ISBN de um livro inativo, que passa a ser exclusivo dele', async () => {
+    const isbn = novoIsbn();
+    const inativado = await criar({ isbn });
+    await sessao.agente.delete(`/api/v1/livros/${inativado.body.data.id}`);
+    const outro = await criar();
+    const edicao = await sessao.agente
+      .patch(`/api/v1/livros/${outro.body.data.id}`)
+      .send({ isbn });
+    expect(edicao.status).toBe(200);
+    expect(edicao.body.data.isbn).toBe(isbn);
+    const terceiro = await criar({ isbn });
+    expect(terceiro.status).toBe(409);
+    expect(terceiro.body.error.code).toBe('ISBN_DUPLICADO');
   });
 
   test('aceita múltiplos livros sem ISBN e normaliza ISBN-10 com X', async () => {

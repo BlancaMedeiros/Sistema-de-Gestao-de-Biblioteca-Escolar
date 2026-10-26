@@ -404,7 +404,7 @@ Devolva **E2, E3, E4 e E5**, cada um com chave nova. Cada ação retorna 200 e r
 ### 8.3 Inativação e reativação sem perder histórico
 
 1. `DELETE /livros/{LA}`: **204**. GET, PATCH válido e novo DELETE em LA: **404 `LIVRO_NAO_ENCONTRADO`**. A busca de ativos não deve mais listar LA.
-2. Repita em LC o PATCH com o ISBN sintético reservado por LA: **409 `ISBN_DUPLICADO`**, mesmo com LA inativo.
+2. Repita em LC o PATCH com o ISBN sintético de LA: **200**, com LC exibindo esse ISBN. A inativação de LA libera o ISBN; enquanto LA estava ativo, o mesmo PATCH dava **409 `ISBN_DUPLICADO`**.
 3. `PATCH /usuarios/{UA}` com `{"status":"Inativo"}`: **200**. GET de UA continua **200**; a lista sem filtro inclui inativos e `status=Ativo` exclui UA.
 4. Cadastro com matrícula de UA: **409 `MATRICULA_DUPLICADA`**, inclusive inativo.
 5. Novo empréstimo LC / UA, chave nova: **409 `USUARIO_INATIVO`**. LC está ativo e disponível, isolando o motivo da rejeição.
