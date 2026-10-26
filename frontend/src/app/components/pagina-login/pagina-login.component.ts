@@ -39,9 +39,6 @@ export class PaginaLoginComponent {
       next: () => {
         alert('Login realizado com sucesso!');
 
-        // Guardamos uma confirmação temporária no navegador
-        localStorage.setItem('usuario_logado', 'true');
-
         // Manda para a rota do dashboard
         this.router.navigate(['/dashboard']);
       },

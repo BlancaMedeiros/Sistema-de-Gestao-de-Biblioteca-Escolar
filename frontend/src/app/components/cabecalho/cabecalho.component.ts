@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { LoginService } from '../../services/login.service';
 
 @Component({
   selector: 'app-cabecalho',
@@ -9,34 +10,20 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './cabecalho.component.html',
   styleUrl: './cabecalho.component.css'
 })
-export class CabecalhoComponent implements OnInit {
-  public usuarioLogado: string | null = null;
+export class CabecalhoComponent {
   public menuAberto: boolean = false;
 
-  constructor(private router: Router) {}
-
-  ngOnInit(): void {
-    // Carrega o estado de login salvo no navegador
-    this.verificarStatusLogin();
-  }
-
-  public verificarStatusLogin(): void {
-    this.usuarioLogado = localStorage.getItem('usuario_logado');
-  }
+  // O nome exibido vem da sessão (login ou /me), não do armazenamento do navegador.
+  constructor(public loginService: LoginService, private router: Router) {}
 
   // Abre e fecha a caixinha do menu
   public toggleMenu(): void {
     this.menuAberto = !this.menuAberto;
   }
 
-  // Ação ao clicar em Logout
+  // Ação ao clicar em Logout: encerra a sessão também na API, senão o cookie continuaria válido
   public logout(): void {
-    // 1. Limpa o login do armazenamento
-    localStorage.removeItem('usuario_logado');
-    this.usuarioLogado = null;
     this.menuAberto = false;
-
-    // 2. Redireciona para abrir o modal de login na hora
-    this.router.navigate(['/login']);
+    this.loginService.EfetuarLogout().subscribe(() => this.router.navigate(['/login']));
   }
 }

@@ -13,7 +13,7 @@
 
     <div class="perfil-wrapper">
         <div class="perfil-container" (click)="toggleMenu()">
-            <span class="usuario-nome">{{ usuarioLogado || 'Login' }}</span>
+            <span class="usuario-nome">{{ loginService.usuarioLogado()?.nome || 'Login' }}</span>
             <i class="fa-solid fa-chevron-down seta-icon"></i>
         </div>
 
