@@ -158,6 +158,15 @@ h2 {
   font-size: 0.9rem;
 }
 
+.alerta-erro {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
 .acoes {
   display: flex;
   justify-content: flex-end;

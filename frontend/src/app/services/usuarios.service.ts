@@ -34,12 +34,17 @@ export class UsuariosService {
     }
     
     // 2. Método para salvar as alterações do perfil
-    atualizarPerfil(usuarioAtualizado: Usuario): Observable<Usuario> {
+    atualizarPerfil(usuarioAtualizado: Partial<Usuario>): Observable<Usuario> {
         return this.http.patch<ResponseDTO<Usuario>>(`${environment.apiUrl}/me`,usuarioAtualizado)
             .pipe(
                 map((retorno)=>{
                     return retorno.data;
                 })
             )
+    }
+
+    // A API responde 204 sem corpo e encerra as outras sessões da conta.
+    alterarSenha(senhaAtual: string, novaSenha: string): Observable<void> {
+        return this.http.put<void>(`${environment.apiUrl}/me/senha`, { senhaAtual, novaSenha });
     }
 }

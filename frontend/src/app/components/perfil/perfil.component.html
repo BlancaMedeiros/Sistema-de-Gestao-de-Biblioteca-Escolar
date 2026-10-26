@@ -33,6 +33,9 @@
     <div *ngIf="mensagemSucesso" class="alerta-sucesso">
       {{ mensagemSucesso }}
     </div>
+    <div *ngIf="mensagemErro" class="alerta-erro" role="alert">
+      {{ mensagemErro }}
+    </div>
 
     <form (ngSubmit)="salvarPerfil()">
       <div class="form-row">
@@ -60,8 +63,12 @@
       <h4 class="titulo-secao">Segurança</h4>
       <div class="form-row">
         <div class="form-group">
+          <label>Senha Atual</label>
+          <input type="password" [(ngModel)]="senhaAtual" name="senhaAtual" placeholder="Obrigatória para trocar a senha" autocomplete="current-password">
+        </div>
+        <div class="form-group">
           <label>Nova Senha</label>
-          <input type="password" [(ngModel)]="novaSenha" name="novaSenha" placeholder="Digite para alterar a senha">
+          <input type="password" [(ngModel)]="novaSenha" name="novaSenha" placeholder="Mínimo de 8 caracteres" autocomplete="new-password">
         </div>
       </div>
 
