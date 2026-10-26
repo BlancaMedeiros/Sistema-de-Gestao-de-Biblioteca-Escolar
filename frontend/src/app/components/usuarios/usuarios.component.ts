@@ -31,6 +31,7 @@ export class UsuariosComponent implements OnInit {
   novoUsuario: Partial<Usuario> = {
     nome: '',
     email: '',
+    telefone: '',
     matricula: '',
     tipo: 'Aluno',
     status: 'Ativo'
@@ -68,6 +69,8 @@ export class UsuariosComponent implements OnInit {
     this.emprestimoService.getEmprestimos(usuario.id).subscribe((emprestimos) => {
       this.historicoUsuario = emprestimos
       this.exibirModalHistorico = true;
+      // Sem zone.js, a resposta HTTP não redesenha a tela sozinha.
+      this.cdr.detectChanges();
     });
   }
 
@@ -91,7 +94,7 @@ export class UsuariosComponent implements OnInit {
       const item: Usuario = {
         id: this.usuarios.length + 1,
         nome: this.novoUsuario.nome,
-        telefone: '(11) 98765-4321',
+        telefone: this.novoUsuario.telefone ?? '',
         email: this.novoUsuario.email,
         matricula: this.novoUsuario.matricula,
         tipo: this.novoUsuario.tipo || 'Aluno',
@@ -124,6 +127,7 @@ export class UsuariosComponent implements OnInit {
     this.novoUsuario = {
       nome: '',
       email: '',
+      telefone: '',
       matricula: '',
       tipo: 'Aluno',
       status: 'Ativo'

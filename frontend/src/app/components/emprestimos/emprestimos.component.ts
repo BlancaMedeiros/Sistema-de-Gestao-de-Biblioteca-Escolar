@@ -31,9 +31,7 @@ export class EmprestimosComponent implements OnInit {
   exibirModalNovo: boolean = false;
   novoEmprestimo = {
     livroId: null as number | null,
-    usuarioId: null as number | null,
-    dataEmprestimo: this.getHojeFormatado(),
-    devolucaoPrevista: this.getDataFuturaFormatada(7)
+    usuarioId: null as number | null
   };
 
   constructor(private emprestimoService: EmprestimoService, private usuariosService: UsuariosService, private acervoService: AcervoService, private cdr: ChangeDetectorRef) {}
@@ -50,9 +48,12 @@ export class EmprestimosComponent implements OnInit {
 
     this.carregarLivros();
 
-    this.usuariosService.getUsuarios().subscribe((response) => {
+    // Sem zone.js, cada resposta HTTP precisa redesenhar a tela; senão o modal
+    // aberto antes de ela chegar fica com as listas vazias.
+    this.usuariosService.getUsuarios(1, 100).subscribe((response) => {
       const usuarios = response.data
       this.usuariosAtivos = usuarios.filter(u => u.status === 'Ativo');
+      this.cdr.detectChanges();
     });
   }
 
@@ -60,8 +61,8 @@ export class EmprestimosComponent implements OnInit {
     this.acervoService.getAcervo().subscribe((livros) => {
       this.todosLivros = livros;
       this.livrosDisponiveis = livros.filter(l => l.quantidadeDisponivel > 0);
+      this.cdr.detectChanges();
     });
-    this.cdr.detectChanges();
   }
 
   aplicarFiltros(): void {
@@ -126,16 +127,8 @@ export class EmprestimosComponent implements OnInit {
     const usuario = this.usuariosAtivos.find(u => u.id === Number(this.novoEmprestimo.usuarioId));
 
     if (livro && usuario && livro.id) {
-      const item: Emprestimo = {
-        id: this.emprestimos.length + 1,
-        livroId: livro.id,
-        livroTitulo: livro.titulo,
-        usuarioId: usuario.id,
-        usuarioNome: usuario.nome,
-        dataEmprestimo: this.formatarDataParaExibicao(this.novoEmprestimo.dataEmprestimo),
-        devolucaoPrevista: this.formatarDataParaExibicao(this.novoEmprestimo.devolucaoPrevista),
-        status: 'Em Andamento'
-      };
+      // Datas, prazo de 7 dias e status são definidos pela API.
+      const item = { livroId: livro.id, usuarioId: usuario.id };
 
       // this.emprestimos.unshift(item);
       const IdempotencyKey = crypto.randomUUID()
@@ -159,32 +152,14 @@ export class EmprestimosComponent implements OnInit {
   private resetarFormulario(): void {
     this.novoEmprestimo = {
       livroId: null,
-      usuarioId: null,
-      dataEmprestimo: this.getHojeFormatado(),
-      devolucaoPrevista: this.getDataFuturaFormatada(7)
+      usuarioId: null
     };
-  }
-
-  private getHojeFormatado(): string {
-    return new Date().toISOString().split('T')[0];
-  }
-
-  private getDataFuturaFormatada(dias: number): string {
-    const d = new Date();
-    d.setDate(d.getDate() + dias);
-    return d.toISOString().split('T')[0];
   }
 
   private formatarData(data: Date): string {
     const dia = String(data.getDate()).padStart(2, '0');
     const mes = String(data.getMonth() + 1).padStart(2, '0');
     const ano = data.getFullYear();
-    return `${dia}/${mes}/${ano}`;
-  }
-
-  private formatarDataParaExibicao(dataIso: string): string {
-    if (!dataIso) return '';
-    const [ano, mes, dia] = dataIso.split('-');
     return `${dia}/${mes}/${ano}`;
   }
 }

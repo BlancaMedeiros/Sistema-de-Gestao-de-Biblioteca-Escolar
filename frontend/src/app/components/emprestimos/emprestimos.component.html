@@ -121,17 +121,9 @@
         </small>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Data de Empréstimo</label>
-          <input type="date" [(ngModel)]="novoEmprestimo.dataEmprestimo" name="dataEmprestimo" required>
-        </div>
-
-        <div class="form-group">
-          <label>Devolução Prevista</label>
-          <input type="date" [(ngModel)]="novoEmprestimo.devolucaoPrevista" name="devolucaoPrevista" required>
-        </div>
-      </div>
+      <p class="dica-localizacao">
+        📅 O empréstimo é registrado com a data de hoje e a devolução fica prevista para 7 dias depois.
+      </p>
 
       <div class="modal-actions">
         <button type="button" class="btn-cancelar" (click)="fecharModal()">Cancelar</button>

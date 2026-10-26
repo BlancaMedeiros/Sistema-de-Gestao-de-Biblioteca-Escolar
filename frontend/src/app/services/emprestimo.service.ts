@@ -30,7 +30,7 @@ export class EmprestimoService {
       )
     }
     
-    adicionarEmprestismo(emprestimoNovo: Emprestimo, Idempotency: string): Observable<Emprestimo> {
+    adicionarEmprestismo(emprestimoNovo: { livroId: number; usuarioId: number }, Idempotency: string): Observable<Emprestimo> {
       return this.http.post<ResponseDTO<Emprestimo>>(`${environment.apiUrl}/emprestimos`, emprestimoNovo,
         {
           headers: { "Idempotency-Key": Idempotency }
