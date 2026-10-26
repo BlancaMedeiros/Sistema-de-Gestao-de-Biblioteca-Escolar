@@ -1,0 +1,144 @@
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Usuario } from '../../models/usuario.model';
+import { Emprestimo } from '../../models/emprestimo.model';
+import { UsuariosService } from '../../services/usuarios.service';
+import { EmprestimoService } from '../../services/emprestimo.service';
+import { firstValueFrom } from 'rxjs';
+
+@Component({
+  selector: 'app-usuarios',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './usuarios.component.html',
+  styleUrl: './usuarios.component.css'
+})
+export class UsuariosComponent implements OnInit {
+  usuarios: Usuario[] = [];
+  usuariosFiltrados: Usuario[] = [];
+  
+  termoBusca: string = '';
+  tipoFiltro: string = '';
+  statusFiltro: string = '';
+
+  exibirModalNovo: boolean = false;
+  exibirModalHistorico: boolean = false;
+  
+  usuarioSelecionado: Usuario | null = null;
+  historicoUsuario: Emprestimo[] = [];
+
+  novoUsuario: Partial<Usuario> = {
+    nome: '',
+    email: '',
+    telefone: '',
+    matricula: '',
+    tipo: 'Aluno',
+    status: 'Ativo'
+  };
+
+  constructor(private usuarioService: UsuariosService, private emprestimoService: EmprestimoService, private cdr: ChangeDetectorRef) {}
+
+  ngOnInit(): void {
+    this.carregarUsuarios();
+  }
+
+  carregarUsuarios(): void {
+    this.usuarioService.getUsuarios(1, 100).subscribe((dados) => {
+      this.usuarios = dados.data;
+      this.aplicarFiltros();
+    });
+  }
+
+  aplicarFiltros(): void {
+    this.usuariosFiltrados = this.usuarios.filter(u => {
+      const atendeBusca = u.nome.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
+                          u.matricula.toLowerCase().includes(this.termoBusca.toLowerCase()) ||
+                          u.email.toLowerCase().includes(this.termoBusca.toLowerCase());
+
+      const atendeTipo = this.tipoFiltro ? u.tipo === this.tipoFiltro : true;
+      const atendeStatus = this.statusFiltro ? u.status === this.statusFiltro : true;
+
+      return atendeBusca && atendeTipo && atendeStatus;
+    });
+    this.cdr.detectChanges();
+  }
+
+  verHistorico(usuario: Usuario): void {
+    this.usuarioSelecionado = usuario;
+    this.emprestimoService.getEmprestimos(usuario.id).subscribe((emprestimos) => {
+      this.historicoUsuario = emprestimos
+      this.exibirModalHistorico = true;
+      // Sem zone.js, a resposta HTTP não redesenha a tela sozinha.
+      this.cdr.detectChanges();
+    });
+  }
+
+  fecharModalHistorico(): void {
+    this.exibirModalHistorico = false;
+    this.usuarioSelecionado = null;
+    this.historicoUsuario = [];
+  }
+
+  abrirModalNovo(): void {
+    this.exibirModalNovo = true;
+  }
+
+  fecharModalNovo(): void {
+    this.exibirModalNovo = false;
+    this.resetarFormulario();
+  }
+
+  async salvarUsuario(): Promise<void> {
+    if (this.novoUsuario.nome && this.novoUsuario.email && this.novoUsuario.matricula) {
+      const item: Usuario = {
+        id: this.usuarios.length + 1,
+        nome: this.novoUsuario.nome,
+        telefone: this.novoUsuario.telefone ?? '',
+        email: this.novoUsuario.email,
+        matricula: this.novoUsuario.matricula,
+        tipo: this.novoUsuario.tipo || 'Aluno',
+        status: (this.novoUsuario.status as 'Ativo' | 'Inativo') || 'Ativo',
+        dataCadastro: this.getHojeFormatado()
+      };
+     
+      const response = await firstValueFrom(this.usuarioService.adicionarUsuario(item));
+      if(response){
+        this.carregarUsuarios();
+        this.fecharModalNovo();
+      }
+    }
+  }
+
+  getStatusClass(status: string): string {
+    return status === 'Ativo' ? 'status-ativo' : 'status-inativo';
+  }
+
+  getStatusEmprestimoClass(status: string): string {
+    switch (status) {
+      case 'Em Andamento': return 'status-andamento';
+      case 'Atrasado': return 'status-atrasado';
+      case 'Devolvido': return 'status-devolvido';
+      default: return '';
+    }
+  }
+
+  private resetarFormulario(): void {
+    this.novoUsuario = {
+      nome: '',
+      email: '',
+      telefone: '',
+      matricula: '',
+      tipo: 'Aluno',
+      status: 'Ativo'
+    };
+  }
+
+  private getHojeFormatado(): string {
+    const data = new Date();
+    const dia = String(data.getDate()).padStart(2, '0');
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = data.getFullYear();
+    return `${dia}/${mes}/${ano}`;
+  }
+}

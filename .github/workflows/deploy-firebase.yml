@@ -1,0 +1,192 @@
+name: Validar e publicar no Firebase
+
+on:
+  push:
+    branches:
+      - feat/backend-foundation
+  pull_request:
+    branches:
+      - feat/backend-foundation
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-firebase-feat-backend-foundation
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: projeto-integrador-2-6352b
+  REGION: southamerica-east1
+  ARTIFACT_REPOSITORY: biblioteca-containers
+  CLOUD_RUN_SERVICE: biblioteca-api
+  WORKLOAD_IDENTITY_PROVIDER: projects/143830170491/locations/global/workloadIdentityPools/github-actions-biblioteca/providers/github-repository
+  DEPLOY_SERVICE_ACCOUNT: biblioteca-github-deployer@projeto-integrador-2-6352b.iam.gserviceaccount.com
+
+jobs:
+  validar:
+    name: Builds e testes completos do backend
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_NAME: biblioteca_teste
+      DB_USER: teste
+      DB_PASSWORD: senha-de-teste
+      SESSION_SECRET: sessao-de-teste
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-de-teste
+          MYSQL_DATABASE: biblioteca_teste
+          MYSQL_USER: teste
+          MYSQL_PASSWORD: senha-de-teste
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --protocol=TCP -h 127.0.0.1 -uroot -proot-de-teste --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Instalar dependências do backend
+        run: npm ci --prefix backend
+
+      - name: Compilar backend
+        run: npm run build --prefix backend
+
+      - name: Aplicar migrations no MySQL de teste
+        run: npm run migrate --prefix backend
+
+      - name: Testar backend completo contra MySQL de teste
+        # Banco descartável do job; nenhum segredo de produção é usado.
+        run: npm test --prefix backend
+
+      - name: Executar QAT por HTTP real com reinício da API
+        run: node backend/scripts/qat-http.mjs
+
+      - name: Instalar dependências do frontend
+        run: npm ci --prefix frontend
+
+      - name: Compilar frontend
+        run: npm run build --prefix frontend
+
+  publicar:
+    name: Publicar Cloud Run e Firebase Hosting
+    needs: validar
+    if: github.ref == 'refs/heads/feat/backend-foundation'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Obter código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js para migrations e Hosting
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Gerar build do frontend para o Hosting
+        run: |
+          npm ci --prefix frontend
+          npm run build --prefix frontend
+
+      - id: auth
+        name: Autenticar no Google Cloud via OIDC
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SERVICE_ACCOUNT }}
+          create_credentials_file: true
+
+      - name: Configurar gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Instalar dependências para migrations
+        run: npm ci --prefix backend
+
+      - name: Configurar Docker para o Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+
+      - name: Gerar e publicar imagem do backend
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE }}
+        run: |
+          docker build --target production --tag "${IMAGE_URI}:${GITHUB_SHA}" backend
+          docker push "${IMAGE_URI}:${GITHUB_SHA}"
+
+      - id: banco
+        name: Obter senha e CA do TiDB no Secret Manager
+        uses: google-github-actions/get-secretmanager-secrets@v3
+        with:
+          # Mesmas versões referenciadas pelo Cloud Run. Atualizar junto
+          # com o serviço ao rotacionar os segredos; nunca usar o Aiven.
+          secrets: |
+            senha:${{ env.PROJECT_ID }}/biblioteca-tidb-db-password/1
+            ca:${{ env.PROJECT_ID }}/biblioteca-tidb-ca/1
+          export_to_environment: false
+          min_mask_length: 1
+
+      - name: Aplicar somente migrations pendentes no TiDB
+        env:
+          NODE_ENV: production
+          DB_HOST: gateway01.sa-east-1.prod.aws.tidbcloud.com
+          DB_PORT: '4000'
+          DB_NAME: biblioteca
+          DB_USER: 2Kp8VfvRaoPPGwc.biblioteca_app
+          DB_CONNECTION_LIMIT: '1'
+          DB_SOCKET_PATH: ''
+          DB_PASSWORD: ${{ steps.banco.outputs.senha }}
+          DB_SSL_CA: ${{ steps.banco.outputs.ca }}
+          # O CLI não inicia HTTP nem cria sessões. Não precisa ler o
+          # SESSION_SECRET de produção para satisfazer config/env.ts.
+          SESSION_SECRET: migrations-sem-servidor-http
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${DB_PASSWORD}"
+          test -n "${DB_SSL_CA}"
+          npm run migrate --prefix backend
+
+      - name: Atualizar o Cloud Run
+        env:
+          IMAGE_URI: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE }}
+        run: |
+          gcloud run deploy "${CLOUD_RUN_SERVICE}" \
+            --image "${IMAGE_URI}:${GITHUB_SHA}" \
+            --project "${PROJECT_ID}" \
+            --region "${REGION}" \
+            --quiet
+
+      - name: Publicar o Firebase Hosting
+        run: npx --yes firebase-tools@15.30.2 deploy --only hosting --project "${PROJECT_ID}" --non-interactive
+
+      - name: Verificar a publicação pública
+        run: |
+          for path in / /api/health /api/ready; do
+            curl --fail --show-error --retry 6 --retry-all-errors --retry-delay 5 \
+              "https://${PROJECT_ID}.web.app${path}"
+          done

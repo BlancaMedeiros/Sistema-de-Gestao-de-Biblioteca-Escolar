@@ -1,0 +1,119 @@
+name: biblioteca-escolar
+
+services:
+  mysql:
+    image: mysql:8.4
+    # Mesmo sql_mode do MySQL de produção (Aiven), que roda em modo ANSI:
+    # "texto" vira identificador (use 'texto' para strings) e || concatena.
+    # Assim um SQL que quebraria em produção já quebra nos testes locais.
+    command:
+      - --sql-mode=REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,ONLY_FULL_GROUP_BY,ANSI,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Copie .env.example para .env e defina MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?Defina MYSQL_DATABASE no arquivo .env}
+      MYSQL_USER: ${MYSQL_USER:?Defina MYSQL_USER no arquivo .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Defina MYSQL_PASSWORD no arquivo .env}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      # Ping via TCP, não via socket: na primeira subida (volume vazio) o
+      # entrypoint roda um servidor temporário sem rede (port: 0) para criar
+      # banco e usuário. Pelo socket ele já responderia, e o `migrate`
+      # tentaria conectar por TCP antes do servidor definitivo (ECONNREFUSED).
+      test: ["CMD-SHELL", "mysqladmin ping --protocol=TCP -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  # Roda as migrations pendentes, cria as contas de desenvolvimento
+  # (seed:funcionarios) e sai (código 0 em sucesso). O `backend` só inicia
+  # depois que este serviço terminar com sucesso — ver `depends_on` abaixo.
+  # Reexecutar é seguro: os dois passos são idempotentes (só aplicam o que
+  # falta; contas existentes não são recriadas nem têm a senha alterada).
+  # Aparecer como "Exited (0)" em `docker compose ps` é o estado esperado,
+  # não uma falha.
+  migrate:
+    image: biblioteca-escolar-backend-dev
+    build:
+      context: ./backend
+      target: development
+    command: ["sh", "-c", "npm run migrate && npm run seed:funcionarios"]
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:?Copie .env.example para .env e defina SESSION_SECRET}
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      - ./database:/database:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  backend:
+    image: biblioteca-escolar-backend-dev
+    build:
+      context: ./backend
+      target: development
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET:?Copie .env.example para .env e defina SESSION_SECRET}
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    ports:
+      - "${FRONTEND_PORT:-4200}:4200"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+
+  # Interface web só para desenvolvimento local: inspecionar tabelas,
+  # rodar consultas manuais. Não faz parte da aplicação nem é implantada.
+  adminer:
+    image: adminer:5
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  backend_node_modules:
+  frontend_node_modules:

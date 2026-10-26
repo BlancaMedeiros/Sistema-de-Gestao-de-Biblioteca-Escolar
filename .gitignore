@@ -1,15 +1,30 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Compiled output
-/dist
+# Dependências e artefatos gerados
+**/node_modules/
+**/dist/
+**/coverage/
+**/.angular/
 /tmp
 /out-tsc
 /bazel-out
 
+# Configuração local
+.env
+.env.*
+!.env.example
+*.pem
+
 # Node
-/node_modules
 npm-debug.log
 yarn-error.log
+
+# Firebase CLI cache and debug output
+.firebase/
+firebase-debug.log
+
+# Credenciais temporárias criadas pelo GitHub Actions
+gha-creds-*.json
 
 # IDEs and editors
 .idea/
@@ -30,10 +45,8 @@ yarn-error.log
 .history/*
 
 # Miscellaneous
-/.angular/cache
 .sass-cache/
 /connect.lock
-/coverage
 /libpeerconnection.log
 testem.log
 /typings

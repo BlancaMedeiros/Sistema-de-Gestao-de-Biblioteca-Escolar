@@ -1,0 +1,43 @@
+<div class="overlay">
+  <div class="modal">
+
+    <!-- Cabeçalho com Nome e Ícone da Biblioteca -->
+    <div class="header-login">
+      <i class="fa-solid fa-book-open logo-icon"></i>
+      <h2>Gestão de Biblioteca Login</h2>
+    </div>
+
+    <!-- Formulário de Login -->
+    <form (ngSubmit)="onLogin()">
+
+      <!-- Campo Usuário -->
+      <input
+        type="text"
+        [(ngModel)]="usuario.username"
+        name="username"
+        placeholder="Usuário ou Email"
+        required
+      >
+
+      <!-- Campo Senha -->
+      <input
+        type="password"
+        [(ngModel)]="usuario.password"
+        name="password"
+        placeholder="Senha"
+        required
+      >
+
+      <!-- Botão de Entrar -->
+      <button type="submit">Entrar</button>
+    </form>
+
+    <!-- Mensagem de erro do login -->
+    <p class="mensagem-erro" role="alert" *ngIf="mensagemErro()">{{ mensagemErro() }}</p>
+
+    <p class="texto-instrucao">
+      Entre com suas credenciais para acessar o sistema.
+    </p>
+
+  </div>
+</div>

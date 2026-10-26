@@ -1,59 +1,98 @@
-# SistemaDeGestaoDeBibliotecaEscolar
+# Sistema de Gestão de Biblioteca Escolar
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.0.
+Monorepo do Projeto Integrador II, com frontend Angular, backend Express + TypeScript e banco MySQL.
 
-## Development server
+> As APIs de autenticação/perfil, funcionários, livros, leitores, empréstimos, dashboard e pendências foram publicadas em 16/10/2026 e aprovadas em 39 cenários/145 requisições HTTPS, cobrindo as 23 operações. A integração das telas permanece como etapa seguinte. Veja o [QAT público e a ressalva de CHECK no TiDB](docs/qat-publicado-2026-10-16.md), o [guia rápido para Bianca](docs/bianca-guia-rapido-api-publicada.md) e o [Swagger publicado](https://projeto-integrador-2-6352b.web.app/api/docs/).
 
-To start a local development server, run:
+Para homologar as APIs antes de entregar à Bianca, use o [checklist de aceite do backend](docs/qat-aceite-backend.md): versão testada, 23 operações, regras de negócio, evidências, defeitos e material de integração.
 
-```bash
-ng serve
+Para executar os testes manualmente pelo Swagger, siga o [guia sequencial das 23 operações](docs/guia-teste-manual-endpoints.md): dados da rodada, login, cadastros, perfil, empréstimos, filtros, renovação, devolução, indicadores e encerramento, com respostas e efeitos esperados.
+
+**QAT local de 16/10:** 236 testes em 24 arquivos passaram em cada banco local (MySQL/TiDB), mais 36 cenários HTTP com reinício real e instalação do zero das nove migrations. Inclui Meu Perfil completo e localização nos empréstimos. Veja o [resultado e correções](docs/qat-resultado-2026-10-16-frontend.md), o [contrato para as telas](docs/specs/2026-10-16-aderencia-frontend.md) e o [guia de integração para Bianca](docs/entrega-backend-bianca.md). A publicação foi verificada na rodada pública posterior; o aceite das telas continua pendente.
+
+## Pré-requisitos
+
+- Docker Desktop em execução, com Docker Compose;
+- Node.js e npm apenas para executar os atalhos `npm run ...` da raiz.
+
+## Executar o ambiente local
+
+No PowerShell, na raiz deste repositório:
+
+```powershell
+Copy-Item .env.example .env
+npm run dev
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Na primeira execução, o Docker baixará as imagens e instalará as dependências dentro dos containers. As alterações em `frontend/` e `backend/` são refletidas por hot reload.
 
-## Code scaffolding
+As migrations e as contas de teste são criadas sozinhas: um serviço `migrate` aplica as migrations pendentes, cria as [contas de funcionário para testar](#contas-de-funcionário-para-testar) e o `backend` só inicia depois que ele terminar com sucesso (ver [docs/arquitetura.md](docs/arquitetura.md#migrations)). Em `docker compose ps` ele aparece como `Exited (0)` — é o esperado, não uma falha. Para rodar as migrations manualmente, sem subir a stack inteira, use `npm run dev:migrate`.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Endereços locais:
 
-```bash
-ng generate component component-name
+- Frontend: `http://localhost:4200`
+- Backend: `http://localhost:3000`
+- Saúde do processo: `http://localhost:3000/health`
+- Prontidão com MySQL: `http://localhost:3000/ready`
+- Documentação Swagger: `http://localhost:3000/api/docs`
+- Adminer (visualizar o banco): `http://localhost:8080` — Sistema: `MySQL`, Servidor: `mysql`, usuário/senha do seu `.env` (`MYSQL_USER`/`MYSQL_PASSWORD`, ou `root`/`MYSQL_ROOT_PASSWORD` para acesso total), Base de dados: `biblioteca`
+
+Para parar os containers sem apagar os dados do banco:
+
+```powershell
+npm run dev:down
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Verificar a fundação
 
-```bash
-ng generate --help
+Com a stack em execução, abra `http://localhost:3000/ready`. A resposta deve conter `"database": "connected"`. Esse endpoint só confirma a conexão Express-MySQL; ele não comprova migrations, autenticação, Swagger ou regras de empréstimo.
+
+Use `npm run dev:status` para ver o estado dos serviços e `npm run dev:logs` para acompanhar os logs.
+
+## Contas de funcionário para testar
+
+O `npm run dev` já cria as contas de desenvolvimento (login e senha conhecidos, só para uso local) — não é preciso rodar nada:
+
+| Login | Senha |
+| --- | --- |
+| `bibliotecaria.teste` | `Teste@123` |
+| `funcionaria.teste` | `Teste@123` |
+
+A seed roda a cada subida e é idempotente: contas que já existem não são recriadas nem têm a senha alterada, e nada é apagado. O resultado aparece em `docker compose logs migrate`. O script recusa rodar com `NODE_ENV=production` (contas com senha fixa no código não devem existir num banco de produção).
+
+### Comandos que rodam fora do Docker
+
+`dev:seed:funcionarios`, `dev:funcionario:criar`, `dev:migrate` e `test:backend` rodam na sua máquina, não no container, e precisam das dependências do backend instaladas localmente. Na primeira vez:
+
+```powershell
+npm ci --prefix backend
 ```
 
-## Building
+Para recriar as contas de teste sem reiniciar a stack (por exemplo, depois de apagar uma delas): `npm run dev:seed:funcionarios`.
 
-To build the project run:
+Para criar uma conta com senha escolhida por você (digitada sem aparecer na tela):
 
-```bash
-ng build
+```powershell
+npm run dev:funcionario:criar    # banco local
+npm run prod:funcionario:criar   # produção (Aiven) — pede confirmação; ver docs/deploy-firebase-cloud-run.md
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Rodar os testes do backend
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
+```powershell
+npm run dev:migrate
+npm run test:backend
 ```
 
-## Running end-to-end tests
+Os testes de `backend/src/modules/auth/*.test.ts` e `backend/src/db/*.test.ts` conectam no MySQL real do Docker Compose (precisa estar rodando) e limpam os dados que criam ao final.
 
-For end-to-end (e2e) testing, run:
+## Estrutura
 
-```bash
-ng e2e
+```text
+frontend/  # Angular
+backend/   # Express + TypeScript
+database/  # migrations e seeds SQL futuros
+docs/      # decisões e contratos técnicos
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Veja [docs/arquitetura.md](docs/arquitetura.md) para decisões, limites atuais e próximas etapas.
