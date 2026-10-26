@@ -42,13 +42,9 @@ export class AcervoService {
                 })
             )
     }
-    deletarLivro(livro: Livro): Observable<Livro> {
-        return this.http.delete<ResponseDTO<Livro>>(`${environment.apiUrl}/livros/${livro.id}`)
-            .pipe(
-                map((retorno)=>{
-                    return retorno.data;
-                })
-            )
+    // A API responde 204 sem corpo: não há data para ler.
+    deletarLivro(livro: Livro): Observable<void> {
+        return this.http.delete<void>(`${environment.apiUrl}/livros/${livro.id}`);
     }
 
     

@@ -130,10 +130,8 @@ export class AcervoComponent implements OnInit {
   async excluirLivro(livro: Livro): Promise<void> {
     const confirmacao = confirm(`Tem certeza que deseja excluir o livro "${livro.titulo}"?`);
     if (confirmacao) {
-      const resultado = await firstValueFrom(this.acervoService.deletarLivro(livro));
-      if(resultado){
-        this.carregarAcervo();
-      }
+      await firstValueFrom(this.acervoService.deletarLivro(livro));
+      this.carregarAcervo();
     }
   }
 
