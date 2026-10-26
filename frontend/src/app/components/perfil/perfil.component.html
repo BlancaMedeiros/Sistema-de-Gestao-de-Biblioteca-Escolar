@@ -10,7 +10,7 @@
     <div class="info-cabecalho">
       <h3>{{ usuario.nome }}</h3>
       <span class="badge-cargo">{{ usuario.cargo }}</span>
-      <p class="matricula">Matrícula: {{ usuario.matricula }}</p>
+      <p class="matricula">Matrícula: {{ usuario.matricula || '—' }}</p>
     </div>
   </div>
 
@@ -42,7 +42,7 @@
         </div>
         <div class="form-group">
           <label>Matrícula</label>
-          <input type="text" [value]="usuario.matricula" disabled class="input-disabled">
+          <input type="text" [value]="usuario.matricula || '—'" disabled class="input-disabled">
         </div>
       </div>
 
